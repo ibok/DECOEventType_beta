@@ -3,8 +3,7 @@
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
 
-   Stats: Accuracy is roughly 96%, Processing rate is <1 sec/image (including
-   sub-groups)"""
+   Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image"""
 
 try:
     import argparse
