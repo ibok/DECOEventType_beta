@@ -3,7 +3,9 @@
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
 
-   Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image"""
+   Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image
+
+   For ease of parsing I/O, Output is in the format: id:event_type."""
 
 import argparse
 import math
@@ -350,9 +352,6 @@ def get_type(x): #Returns string version of type
         '5' : 'big_spot',
         '6' : 'track_lc' #low confidence
     }[x]
-
-print('For ease of parsing I/O, Output is in the format:\n'+
-    '   id:event_type.')
 
 filelist = []
 info_arr = []
