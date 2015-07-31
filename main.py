@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
+f = open('classifications.out', 'w')
+
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
-
    Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image
 
    For ease of parsing I/O, Output is in the format: id:event_type."""
@@ -368,10 +369,6 @@ n = 0
 for efile in filelist:
     # Load each image and convert pixel values to grayscale intensities
     iid = efile.split('/')[-1].split('.')[0]
-    if len(iid) > 9 and not '_' in iid:
-        print('Did we change the naming system?\n' +
-            '(Expected a 9 digit event id, got one with' + str(len(iid)) + '.)')
-        raise SystemExit
     img = Image.open(efile).convert("L")
     image = []
     pix = img.load()
@@ -382,9 +379,10 @@ for efile in filelist:
     x0, y0, x1, y1 = (0, 0, nx, ny)
     for y in xrange(ny):
         image.append([pix[x, y] for x in xrange(nx)])
-    sys.stdout.write("\n")
 
+    # Find average pixel value (grayscale) for noise classification
     image = np.array(image, dtype=float)
+    pixavg = sum(sum(image))/(len(image)*len(image[0]))
 
     # Calculate contours using the scikit-image marching squares algorithm,
     # store as Blobs, and group the Blobs into associated clusters
@@ -451,15 +449,17 @@ for efile in filelist:
             the image group currently being analyzed. One of its faults is the
             analysis of the whole image as opposed to each blob individually"""
 
-            # 0 == null ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
+            # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
             if args.contours < 41 or args.contours > 39:
                 type = 0
-                if eccentricity > 0.99993 and l1 > 700:
+                if pixavg > 3:
+                    continue # Skips picture
+                elif eccentricity > 0.99993 and l1 > 700:
                     type = 4
                 elif areas[n] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[n] < 7) or eccentricity < 0.7:
                     if eccentricity > 0.93 and mlength < 8. and areas[n] > 11. or eccentricity > 0.9 and l1 < 10 and areas[n] < 25. and factr < 3.4:
-                            type = 2
+                        type = 2
                     elif areas[n] > 50 and areas[n] > 62. and mlength > 10.:
                         if areas[n] > 62 and mlength > 10.:
                             type = 2
@@ -525,7 +525,7 @@ for efile in filelist:
                                             type = 2
                                     else:
                                         type = 2
-                print(str(iid) + ':' + get_type(str(type)))
+                print >>f, (str(iid) + ':' + get_type(str(type)))
             else:
                 print('To analyze event type, set contour level between (inclusive)\n'
                 + '39 and 41.')
