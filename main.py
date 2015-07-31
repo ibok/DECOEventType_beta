@@ -5,19 +5,14 @@
 
    Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image"""
 
-try:
-    import argparse
-    import math
-    import os
-    import re
-    import sys
-    import numpy as np
-    from PIL import Image
-    from skimage import measure
-
-except ImportError as e:
-    print ('Import Error: ' + e)
-    raise SystemExit
+import argparse
+import math
+import os
+import re
+import sys
+import numpy as np
+from PIL import Image
+from skimage import measure
 
 class Line:
     """Line class that builds a line 'object' that is able to run various
@@ -98,7 +93,6 @@ class BlobGroup:
         self.ymax = -1e10
         self.area = 0
         self.perimeter = 0
-        self.center = None
 
     def addBlob(self, blob):
         """Add a blob to the group and enlarge the bounding rectangle of the
@@ -346,6 +340,17 @@ for root, afile, i in filegen:
     farr.append(i)
     parr.append(root)
 
+def get_type(x): #Returns string version of type
+    return {
+        '0' : 'null',
+        '1' : 'spot',
+        '2' : 'worm',
+        '3' : 'track',
+        '4' : 'ambig',
+        '5' : 'big_spot',
+        '6' : 'track_lc' #low confidence
+    }[x]
+
 print('For ease of parsing I/O, Output is in the format:\n'+
     '   id:event_type.')
 
@@ -369,7 +374,6 @@ for efile in filelist:
             '(Expected a 9 digit event id, got one with' + str(len(iid)) + '.)')
         raise SystemExit
     img = Image.open(efile).convert("L")
-    ext = sum(img.getextrema())
     image = []
     pix = img.load()
 
@@ -418,8 +422,6 @@ for efile in filelist:
             for pt in pt_arr[n]:
                 tdist += findDist(_i, pt)
             factr = tdist/mlength
-            #print "%sMaxCov:%16gMinCov:%16gTheta:%16gRatioM/m:%16g" % \
-            #      (efile, l1, l2, theta*180./np.pi, l2/l1)
             r = l2/l1
 
             """Sequence of statements that calculates the weighted
@@ -427,10 +429,6 @@ for efile in filelist:
             ratios in both the X and Y direction to find the centerpoint
             displacement product (cdrp) and difference (cdrd) of the image
             group."""
-            xmi = bg.xmin
-            xma = bg.xmax
-            ymi = bg.ymin
-            yma = bg.ymax
             numbl = 0
             bgtarea = 0.
             carr = [0, 0]
@@ -441,17 +439,17 @@ for efile in filelist:
                 carr[1] += b.yc*b.perimeter
             centx = carr[0]/float(numbl*bgtarea)
             centy = carr[1]/float(numbl*bgtarea)
-            diffx_a = centx - xmi
-            diffx_b = xma - centx
-            diffy_a = centy - ymi
-            diffy_b = yma - centy
+            diffx_a = centx - bg.xmin
+            diffx_b = bg.xmax - centx
+            diffy_a = centy - bg.ymin
+            diffy_b = bg.ymax - centy
             ratx = min([diffx_a, diffx_b])/max([diffx_a, diffx_b])
             raty = min([diffy_a, diffy_b])/max([diffy_a, diffy_b])
             cdrp = ratx*raty
             cdrd = abs(ratx-raty)
 
             """Code block that analyzes the most likely type of event inside
-            the image group currently being analyzed. Its one fault is the
+            the image group currently being analyzed. One of its faults is the
             analysis of the whole image as opposed to each blob individually"""
 
             # 0 == null ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
@@ -463,7 +461,7 @@ for efile in filelist:
                 elif areas[n] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[n] < 7) or eccentricity < 0.7:
                     if eccentricity > 0.93 and mlength < 8. and areas[n] > 11. or eccentricity > 0.9 and l1 < 10 and areas[n] < 25. and factr < 3.4:
                             type = 2
-                    elif areas[n] > 50:
+                    elif areas[n] > 50 and areas[n] > 62. and mlength > 10.:
                         if areas[n] > 62 and mlength > 10.:
                             type = 2
                         else:
@@ -487,78 +485,50 @@ for efile in filelist:
                         if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and eccentricity > 0.96:
                             if areas[n] > 33:
                                 type = 3
-                            elif eccentricity > 0.999:
-                                type = 2
                             else:
                                 type = 2
-                        elif eccentricity < 0.98 and r < 0.21 and cdrd < 0.015 and mlength > 9 and mlength < 18:
-                            type = 3
-                        elif eccentricity > 0.975 and eccentricity < 0.99 and r < 0.22 and factr < 3.255 and mlength > 10 and mlength < 18 and cdrd < 0.023:
+                        elif ((eccentricity < 0.98 and r < 0.21 and cdrd < 0.015 and mlength > 9 and mlength < 18) or
+                            (eccentricity > 0.975 and eccentricity < 0.99 and r < 0.22 and factr < 3.255 and mlength > 10 and mlength < 18 and cdrd < 0.023)):
                             type = 3
                         else:
                             if factr > 4.6 and areas[n] < 100 or areas[n] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
                                 type = 2
                             else:
-                                if l1 > 100 and l2 < 12 and areas[n] > 40 and areas[n] < 60 and factr < 3.8:
-                                    type = 3
-                                elif (abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05:
-                                    type = 3
-                                elif cdrd < 0.7 and factr > 6:
+                                if cdrd < 0.7 and factr > 6.:
                                     type = 2
-                                elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[n] < 82): #random magic
-                                    type = 3
-                                elif ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[n] < 100)):
+                                elif ((l1 > 100 and l2 < 12 and areas[n] > 40 and areas[n] < 60 and factr < 3.8) or
+                                ((abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05) or
+                                ((cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[n] < 82)) or
+                                ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[n] < 100))):
                                     type = 3
                                 else:
-                                    if eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
-                                        type = 4
-                                    elif eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
+                                    if eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
                                         type = 2
-                                    elif eccentricity > 0.992 and eccentricity < 0.999 and areas[n] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98:
-                                        type = 4
-                                    elif cdrp > 0.75 and cdrd < 0.182 and ((areas[n] > 28) or (areas[n] < 28 and mlength > 17)):
-                                        if (eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[n] < 62:#Worm catchers
-                                            type = 2
-                                        elif eccentricity > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4:
-                                            type = 2
-                                        elif eccentricity < 0.99 and eccentricity > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2:
-                                            type = 2
-                                        elif eccentricity > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and areas[n] < 50:
-                                            type = 2
-                                        elif eccentricity > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12:
-                                            type = 2
-                                        elif ((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[n] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
-                                        factr < 4.1 and areas[n] > 30 and cdrd < 0.059 and mlength < 16):
-                                            type = 3
-                                        elif (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[n] < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3):
-                                            type = 3
-                                        else:
-                                            type = 2
                                     elif cdrp > 0.75 and cdrd < 0.05 and areas[n] > 30:
                                         type = 6
                                     elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and eccentricity > 0.92 and eccentricity < 0.999:
                                         type = 3
+                                    elif ((eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1)) or
+                                    (eccentricity > 0.992 and eccentricity < 0.999 and areas[n] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98)):
+                                        type = 4
+                                    elif cdrp > 0.75 and cdrd < 0.182 and ((areas[n] > 28) or (areas[n] < 28 and mlength > 17)):
+                                        if (((eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[n] < 62) or
+                                        (eccentricity > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4) or
+                                        (eccentricity < 0.99 and eccentricity > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2) or
+                                        (eccentricity > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and areas[n] < 50) or
+                                        (eccentricity > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12)):
+                                            type = 2
+                                        elif (((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[n] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
+                                        factr < 4.1 and areas[n] > 30 and cdrd < 0.059 and mlength < 16) or
+                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[n] < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3)):
+                                            type = 3
+                                        else:
+                                            type = 2
                                     else:
                                         type = 2
-                output = str(iid) + ':'
-                if (type == 0) :
-                    print(output + 'null')
-                elif (type == 1) :
-                    print(output + 'spot')
-                elif (type == 2) :
-                    print(output + 'worm')
-                elif (type == 3) :
-                    print(output + 'track')
-                elif (type == 4) :
-                    print(output + 'ambig')
-                elif (type == 5) :
-                    print(output + 'bigspot') #alpha particle
-                else :
-                    print(output + 'track_lc') #low confidence
+                print(str(iid) + ':' + get_type(str(type)))
             else:
                 print('To analyze event type, set contour level between (inclusive)\n'
                 + '39 and 41.')
                 raise SystemExit
             n += 1
-    	    #print "x0,x1,y0,y1:", [x0,x1,y0,y1]
-    	    #print "X0,X1,Y0,Y1:", [X0,X1,Y0,Y1]
