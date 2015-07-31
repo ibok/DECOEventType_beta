@@ -294,13 +294,10 @@ def fakeTracksFilter(bg, l1):
     tecc = 0.
     bnum = 0
     for b in bg.blobs:
-        print(b.area)
         if b.area > 60:
             return False #Probably a real track
         bnum += 1
         tecc += b.maxdist/b.perimeter
-    print(bg.area)
-    print(tecc/bnum)
     if bg.area > l1/17 or tecc/bnum > 0.03:
         return True
     return False
