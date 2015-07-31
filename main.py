@@ -470,13 +470,13 @@ for efile in filelist:
                 else:
                     if cdrd > 0.55:
                         type = 2
-                    elif areas[n] > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
-                        if factr > 9 or l1/5 > mlength and factr > 3.9 or mlength > 40 and mlength < 80 and areas[n] > 100 and factr > 5:
+                    elif areas[n] > 100 and l1 > 100 and l1/10 > l2 and mlength > 30:
+                        if factr > 9 or l1/5 > mlength and factr > 3.9 or 80 > mlength > 40 and areas[n] > 100 and factr > 5:
                             type = 2
                         else:
                             type = 3
                     elif eccentricity > 0.9995 and mlength > 40 and cdrp > 0.8:
-                        if eccentricity > 0.9998 and mlength > 90 and mlength < 130:
+                        if eccentricity > 0.9998 and 130 > mlength > 90:
                             type = 3
                         else:
                             type = 4
@@ -486,8 +486,8 @@ for efile in filelist:
                                 type = 3
                             else:
                                 type = 2
-                        elif ((eccentricity < 0.98 and r < 0.21 and cdrd < 0.015 and mlength > 9 and mlength < 18) or
-                            (eccentricity > 0.975 and eccentricity < 0.99 and r < 0.22 and factr < 3.255 and mlength > 10 and mlength < 18 and cdrd < 0.023)):
+                        elif ((eccentricity < 0.98 and r < 0.21 and cdrd < 0.015 and 18 > mlength > 9) or
+                            (0.99 > eccentricity > 0.975 and r < 0.22 and factr < 3.255 and 18 > mlength > 10 and cdrd < 0.023)):
                             type = 3
                         else:
                             if factr > 4.6 and areas[n] < 100 or areas[n] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
@@ -495,8 +495,8 @@ for efile in filelist:
                             else:
                                 if cdrd < 0.7 and factr > 6.:
                                     type = 2
-                                elif ((l1 > 100 and l2 < 12 and areas[n] > 40 and areas[n] < 60 and factr < 3.8) or
-                                ((abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05) or
+                                elif ((l1 > 100 and l2 < 12 and 60 > areas[n] > 40 and factr < 3.8) or
+                                ((abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and 2. < factr < 2.95 and cdrd > 0.05) or
                                 ((cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[n] < 82)) or
                                 ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[n] < 100))):
                                     type = 3
@@ -512,14 +512,14 @@ for efile in filelist:
                                         type = 4
                                     elif cdrp > 0.75 and cdrd < 0.182 and ((areas[n] > 28) or (areas[n] < 28 and mlength > 17)):
                                         if (((eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[n] < 62) or
-                                        (eccentricity > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4) or
-                                        (eccentricity < 0.99 and eccentricity > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2) or
-                                        (eccentricity > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and areas[n] < 50) or
-                                        (eccentricity > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12)):
+                                        (eccentricity > 0.99 and 600 > l1 > 400 and l2 > 60 and factr > 3.4) or
+                                        (0.975 < eccentricity < 0.99 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2) or
+                                        (eccentricity > 0.993 and factr < 3. and 28 < mlength < 40 and 0.94 > cdrp > 0.9 and areas[n] < 50) or
+                                        (eccentricity > 0.993 and 3.5 < factr < 4 and 17 < mlength < 25 and r < 0.12)):
                                             type = 2
                                         elif (((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[n] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
                                         factr < 4.1 and areas[n] > 30 and cdrd < 0.059 and mlength < 16) or
-                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[n] < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3)):
+                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[n] < 50 and mlength < 20 and 12. < l1 < 23. and l2 < 3)):
                                             type = 3
                                         else:
                                             type = 2
