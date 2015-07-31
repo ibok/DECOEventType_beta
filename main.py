@@ -4,7 +4,7 @@ f = open('classifications.out', 'w')
 
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
-   Stats: Accuracy is roughly 92%, Processing rate is 2 sec/image
+   Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
 
    For ease of parsing I/O, Output is in the format: id:event_type."""
 
