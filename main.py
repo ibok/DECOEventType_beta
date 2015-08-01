@@ -524,7 +524,7 @@ for efile in filelist:
                                     else:
                                         type = 2
 
-                print >>f, (str(iid) + ':' + get_type(str(type)))
+                print >>f, (str(iid) + ',' + get_type(str(type)))
             else:
                 print('To analyze event type, set contour level between (inclusive)\n'
                 + '39 and 41.')
