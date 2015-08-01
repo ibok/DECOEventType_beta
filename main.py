@@ -64,14 +64,14 @@ class Blob:
             p2 = [self.y[i+1], self.y[i+1]]
             self.perimeter += calcDist(p1, p2)
 
-        # Fin furthest distance between any two blob contour points
+        # Find furthest distance between any two blob contour points
         self.maxdist = 0
-        for i in range(0, len(self.x)):
-            for j in range(i, len(self.x)):
-                p1 = [self.x[i], self.y[i]]
-                p2 = [self.y[j], self.y[j]]
-                if (calcDist(p1, p2) > self.maxdist):
-                    self.maxdist = calcDist(p1, p2)
+        end = len(self.x)
+        for i in range(0, end):
+            for j in range(i, end):
+                pmax = calcDist((self.x[i], self.y[i]), (self.y[j], self.y[j]))
+                if pmax > self.maxdist:
+                    self.maxdist = pmax
 
     def distance(self, blob):
         """Calculate the distance between the centroid of this blob contour and
@@ -335,7 +335,7 @@ args = p.parse_args()
 
 folder = args.folder[0]
 
-#Create array of all image file paths
+#Create array of all image file paths, in all subdirectories
 filegen = os.walk(folder)
 
 farr, parr = [], []
@@ -343,6 +343,16 @@ for root, afile, i in filegen:
     farr.append(i)
     parr.append(root)
 
+filelist = []
+info_arr = []
+pt_arr = []
+areas = []
+
+for i in range(0,len(parr)):
+    for filename in farr[i]:
+        if re.search('\.jpe?g',filename,re.IGNORECASE):
+            filelist.append(parr[i] + '/' + filename)
+            
 def get_type(x): #Returns string version of type
     return {
         '0' : 'null',
@@ -353,18 +363,6 @@ def get_type(x): #Returns string version of type
         '5' : 'big_spot',
         '6' : 'track_lc' #low confidence
     }[x]
-
-filelist = []
-info_arr = []
-pt_arr = []
-areas = []
-
-for i in range(0,len(parr)):
-    for fname in farr[i]:
-        if re.search('\.jpe?g',fname,re.IGNORECASE):
-            filelist.append(parr[i] + '/' + fname)
-
-n = 0
 
 for efile in filelist:
     # Load each image and convert pixel values to grayscale intensities
@@ -411,12 +409,12 @@ for efile in filelist:
             eccentricity = (np.sqrt( l1**2 - l2**2 ) / l1)
             # Calculate summative distance from the maximum distance
             # line of all points in the group's blob's contours, then weight.
-            stat = info_arr[n][0]
-            endd = info_arr[n][1]
-            _i = Line(calcslp((float(info_arr[n][0][1]) - info_arr[n][1][1]),(float(info_arr[n][0][0]) - info_arr[n][1][0])), stat)
+            stat = info_arr[i][0]
+            endd = info_arr[i][1]
+            _i = Line(calcslp((float(info_arr[i][0][1]) - info_arr[i][1][1]),(float(info_arr[i][0][0]) - info_arr[i][1][0])), stat)
             tdist = 0.
             mlength = calcDist(stat, endd)
-            for pt in pt_arr[n]:
+            for pt in pt_arr[i]:
                 tdist += findDist(_i, pt)
             factr = tdist/mlength
             r = l2/l1
@@ -457,11 +455,11 @@ for efile in filelist:
                     continue # Skips picture
                 elif eccentricity > 0.99993 and l1 > 700:
                     type = 4
-                elif areas[n] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[n] < 7) or eccentricity < 0.7:
-                    if eccentricity > 0.93 and mlength < 8. and areas[n] > 11. or eccentricity > 0.9 and l1 < 10 and areas[n] < 25. and factr < 3.4:
+                elif areas[i] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[i] < 7) or eccentricity < 0.7:
+                    if eccentricity > 0.93 and mlength < 8. and areas[i] > 11. or eccentricity > 0.9 and l1 < 10 and areas[i] < 25. and factr < 3.4:
                         type = 2
-                    elif areas[n] > 50 and areas[n] > 62. and mlength > 10.:
-                        if areas[n] > 62 and mlength > 10.:
+                    elif areas[i] > 50 and areas[i] > 62. and mlength > 10.:
+                        if areas[i] > 62 and mlength > 10.:
                             type = 2
                         else:
                             type = 5
@@ -470,8 +468,8 @@ for efile in filelist:
                 else:
                     if cdrd > 0.55:
                         type = 2
-                    elif areas[n] > 100 and l1 > 100 and l1/10 > l2 and mlength > 30:
-                        if factr > 9 or l1/5 > mlength and factr > 3.9 or 80 > mlength > 40 and areas[n] > 100 and factr > 5:
+                    elif areas[i] > 100 and l1 > 100 and l1/10 > l2 and mlength > 30:
+                        if factr > 9 or l1/5 > mlength and factr > 3.9 or 80 > mlength > 40 and areas[i] > 100 and factr > 5:
                             type = 2
                         else:
                             type = 3
@@ -482,7 +480,7 @@ for efile in filelist:
                             type = 4
                     else:
                         if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and eccentricity > 0.96:
-                            if areas[n] > 33:
+                            if areas[i] > 33:
                                 type = 3
                             else:
                                 type = 2
@@ -490,44 +488,44 @@ for efile in filelist:
                             (0.99 > eccentricity > 0.975 and r < 0.22 and factr < 3.255 and 18 > mlength > 10 and cdrd < 0.023)):
                             type = 3
                         else:
-                            if factr > 4.6 and areas[n] < 100 or areas[n] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
+                            if factr > 4.6 and areas[i] < 100 or areas[i] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
                                 type = 2
                             else:
                                 if cdrd < 0.7 and factr > 6.:
                                     type = 2
-                                elif ((l1 > 100 and l2 < 12 and 60 > areas[n] > 40 and factr < 3.8) or
+                                elif ((l1 > 100 and l2 < 12 and 60 > areas[i] > 40 and factr < 3.8) or
                                 ((abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and 2. < factr < 2.95 and cdrd > 0.05) or
-                                ((cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[n] < 82)) or
-                                ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[n] < 100))):
+                                ((cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[i] < 82)) or
+                                ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[i] < 100))):
                                     type = 3
                                 else:
                                     if eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
                                         type = 2
-                                    elif cdrp > 0.75 and cdrd < 0.05 and areas[n] > 30:
+                                    elif cdrp > 0.75 and cdrd < 0.05 and areas[i] > 30:
                                         type = 6
                                     elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and eccentricity > 0.92 and eccentricity < 0.999:
                                         type = 3
                                     elif ((eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1)) or
-                                    (eccentricity > 0.992 and eccentricity < 0.999 and areas[n] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98)):
+                                    (eccentricity > 0.992 and eccentricity < 0.999 and areas[i] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98)):
                                         type = 4
-                                    elif cdrp > 0.75 and cdrd < 0.182 and ((areas[n] > 28) or (areas[n] < 28 and mlength > 17)):
-                                        if (((eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[n] < 62) or
+                                    elif cdrp > 0.75 and cdrd < 0.182 and ((areas[i] > 28) or (areas[i] < 28 and mlength > 17)):
+                                        if (((eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[i] < 62) or
                                         (eccentricity > 0.99 and 600 > l1 > 400 and l2 > 60 and factr > 3.4) or
                                         (0.975 < eccentricity < 0.99 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2) or
-                                        (eccentricity > 0.993 and factr < 3. and 28 < mlength < 40 and 0.94 > cdrp > 0.9 and areas[n] < 50) or
+                                        (eccentricity > 0.993 and factr < 3. and 28 < mlength < 40 and 0.94 > cdrp > 0.9 and areas[i] < 50) or
                                         (eccentricity > 0.993 and 3.5 < factr < 4 and 17 < mlength < 25 and r < 0.12)):
                                             type = 2
-                                        elif (((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[n] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
-                                        factr < 4.1 and areas[n] > 30 and cdrd < 0.059 and mlength < 16) or
-                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[n] < 50 and mlength < 20 and 12. < l1 < 23. and l2 < 3)):
+                                        elif (((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[i] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
+                                        factr < 4.1 and areas[i] > 30 and cdrd < 0.059 and mlength < 16) or
+                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[i] < 50 and mlength < 20 and 12. < l1 < 23. and l2 < 3)):
                                             type = 3
                                         else:
                                             type = 2
                                     else:
                                         type = 2
+
                 print >>f, (str(iid) + ':' + get_type(str(type)))
             else:
                 print('To analyze event type, set contour level between (inclusive)\n'
                 + '39 and 41.')
                 raise SystemExit
-            n += 1
