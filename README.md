@@ -3,7 +3,7 @@ ilhan's python event classification script
 
 ## Script info
 
-The script can be run in any python environemnt. The output is in the form [image id]:[event type].
+The script can be run in any python environment. The output is in the form [image id]:[event type].
 
 The script is not completely accurate and is being improved. Currently the average accuracy is roughly 68 percent and the speed is about 2 seconds per jpeg image. Ambiguous events are not included in the accuracy calculation.
 
