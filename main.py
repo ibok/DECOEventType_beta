@@ -6,7 +6,9 @@ f = open('classifications.out', 'w')
    each blob group in that event.
    Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
 
-   For ease of parsing I/O, Output is in the format: id:event_type."""
+   For ease of parsing I/O, Output is in the format: id:event_type.
+
+   Appends first letter of suspected event type to name of file."""
 
 import argparse
 import math
@@ -351,8 +353,8 @@ areas = []
 for i in range(0,len(parr)):
     for filename in farr[i]:
         if re.search('\.jpe?g',filename,re.IGNORECASE):
-            filelist.append(parr[i] + '/' + filename)
-            
+            filelist.append([parr[i], parr[i] + '/' + filename])
+
 def get_type(x): #Returns string version of type
     return {
         '0' : 'null',
@@ -364,9 +366,24 @@ def get_type(x): #Returns string version of type
         '6' : 'track_lc' #low confidence
     }[x]
 
-for efile in filelist:
+def get_abbr(y): #Returns substring to append to file
+    return {
+        '0' : '_x',
+        '1' : '_s',
+        '2' : '_w',
+        '3' : '_t',
+        '4' : '_a',
+        '5' : '_b',
+        '6' : '_l'
+    }[y]
+
+for files in filelist:
+    # Fix filename if it contains extra slash
+    efile = files[1].replace('//','/')
     # Load each image and convert pixel values to grayscale intensities
-    iid = efile.split('/')[-1].split('.')[0]
+    fullname = efile.split('/')[-1]
+    iid = fullname.split('.')[0]
+    tail = fullname.split('.')[-1]
     img = Image.open(efile).convert("L")
     image = []
     pix = img.load()
@@ -525,6 +542,11 @@ for efile in filelist:
                                         type = 2
 
                 print >>f, (str(iid) + ',' + get_type(str(type)))
+                append = get_abbr(str(type))
+                if files[0][-1] == '/':
+                    files[0] = files[0][:-1]
+                if (not iid[-2:] == append):
+                    os.rename(efile, files[0] + '/' + iid + append + '.' + tail)
             else:
                 print('To analyze event type, set contour level between (inclusive)\n'
                 + '39 and 41.')
