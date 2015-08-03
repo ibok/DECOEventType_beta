@@ -9,7 +9,7 @@ The script is not completely accurate and is being improved. Currently the avera
 
 Details about accuracy:
 
-The script was run on a large sample of worms and tracks...
+The script was run on a large sample of worms and tracks (not spots intentionally)...
 
 Out of 32 worms it identified 30 correctly.<br>
 Accuracy: 93.55%<br>
@@ -22,9 +22,11 @@ Accuracy: 71.43%<br>
 <br>
 The program identified all 3 ambiguous events correctly.<br>
 
-For every 542 events there are (according to our classifications):<br>
+There may have been some bias as the some of the events were rerun on the calibration sample (which is becoming larger and larger...), and so the script will be rerun on a randomized sample. I am fairly certain that with some recalibration and retesting the script will have the same or higher accuracy on the random images as well. For these stats, Matt Meehan and I analyzed the events and compared our classification to the program's. The test was [double blind](https://explorable.com/double-blind-experiment) to ensure accurate stats.
+
+For every 542 events there are (according to Heather's classifications):<br>
 363 worms,<br>
 82 tracks and<br>
 94 spots
 
-As of now only .jpg and .jpeg images can be run using the script.
+For now only .jpg and .jpeg images can be run using the script.
