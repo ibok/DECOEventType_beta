@@ -37,6 +37,8 @@ The program identified all 3 ambiguous events correctly.<br>
 
 There may have been some bias as the some of the events were rerun on the calibration sample. For these stats, Matt Meehan and I analyzed the events and compared our classification to the program's. The test was ["double blind"](https://explorable.com/double-blind-experiment) to ensure accurate stats.
 
+The program has since been updated and these stats may not be completely accurate.
+
 For every 542 events there are (according to Heather's classifications):<br>
 363 worms,<br>
 82 tracks and<br>
