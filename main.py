@@ -2,10 +2,9 @@
 
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
+
    Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
-
    For ease of parsing I/O, Output is in the format: id:event_type.
-
    Appends first letter of suspected event type to name of file."""
 
 import argparse, math, os, sys
@@ -352,7 +351,8 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
             3 : 'track',
             4 : 'ambig',
             5 : 'big_spot',
-            6 : 'track_lowconf'
+            6 : 'track_lowconf',
+            7 : 'noise'
         }[x]
     else:
         return {
@@ -362,7 +362,8 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
             '3' : '_t',
             '4' : '_a',
             '5' : '_b',
-            '6' : '_l'
+            '6' : '_l',
+            '7' : '_n'
         }[x]
 
 for files in flist:
