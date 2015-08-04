@@ -541,9 +541,9 @@ for files in flist:
                                     else:
                                         type = 2
                 print_type(iid, type)
-                append = get_chars(str(type), 1)
-                fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
-                if (not iid[-2:] == append):
-                    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
+                #append = get_chars(str(type), 1)
+                #fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
+                #if (not iid[-2:] == append):
+                #    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
             else:
                 print('As of now only image analysis at contour level 40 is supported, sorry.') and exit()
