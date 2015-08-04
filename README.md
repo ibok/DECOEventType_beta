@@ -44,4 +44,4 @@ For every 542 events there are (according to Heather's classifications):<br>
 82 tracks and<br>
 94 spots
 
-[Supported file formats](http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html): jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm spi tiff webp xbm xv
+[Supported file](http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html) formats include: jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm spi tiff webp xbm xv
