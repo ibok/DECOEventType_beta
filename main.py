@@ -472,78 +472,93 @@ for files in filelist:
             # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
             if args.contours == 40:
-                type = 0
-                if eccentricity > 0.99993 and l1 > 700:
-                    type = 4
-                elif areas[i] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[i] < 7) or eccentricity < 0.7:
-                    if eccentricity > 0.93 and mlength < 8. and areas[i] > 11. or eccentricity > 0.9 and l1 < 10 and areas[i] < 25. and factr < 3.4:
-                        type = 2
-                    elif areas[i] > 50 and areas[i] > 62. and mlength > 10.:
-                        if areas[i] > 62 and mlength > 10.:
-                            type = 2
-                        else:
-                            type = 5
-                    else:
-                        type = 1
-                else:
-                    if cdrd > 0.55:
-                        type = 2
-                    elif areas[i] > 100 and l1 > 100 and l1/10 > l2 and mlength > 30:
-                        if factr > 9 or l1/5 > mlength and factr > 3.9 or 80 > mlength > 40 and areas[i] > 100 and factr > 5:
-                            type = 2
-                        else:
-                            type = 3
-                    elif eccentricity > 0.9995 and mlength > 40 and cdrp > 0.8:
-                        if eccentricity > 0.9998 and 130 > mlength > 90:
-                            type = 3
-                        else:
-                            type = 4
-                    else:
-                        if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and eccentricity > 0.96:
-                            if areas[i] > 33:
-                                type = 3
-                            else:
-                                type = 2
-                        elif ((eccentricity < 0.98 and r < 0.21 and cdrd < 0.015 and 18 > mlength > 9) or
-                            (0.99 > eccentricity > 0.975 and r < 0.22 and factr < 3.255 and 18 > mlength > 10 and cdrd < 0.023)):
-                            type = 3
-                        else:
-                            if factr > 4.6 and areas[i] < 100 or areas[i] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
-                                type = 2
-                            else:
-                                if cdrd < 0.7 and factr > 6.:
-                                    type = 2
-                                elif ((l1 > 100 and l2 < 12 and 60 > areas[i] > 40 and factr < 3.8) or
-                                ((abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and 2. < factr < 2.95 and cdrd > 0.05) or
-                                ((cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[i] < 82)) or
-                                ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[i] < 100))):
-                                    type = 3
-                                else:
-                                    if eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
-                                        type = 2
-                                    elif cdrp > 0.75 and cdrd < 0.05 and areas[i] > 30:
-                                        type = 6
-                                    elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and eccentricity > 0.92 and eccentricity < 0.999:
-                                        type = 3
-                                    elif ((eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1)) or
-                                    (eccentricity > 0.992 and eccentricity < 0.999 and areas[i] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98)):
-                                        type = 4
-                                    elif cdrp > 0.75 and cdrd < 0.182 and ((areas[i] > 28) or (areas[i] < 28 and mlength > 17)):
-                                        if (((eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[i] < 62) or
-                                        (eccentricity > 0.99 and 600 > l1 > 400 and l2 > 60 and factr > 3.4) or
-                                        (0.975 < eccentricity < 0.99 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2) or
-                                        (eccentricity > 0.993 and factr < 3. and 28 < mlength < 40 and 0.94 > cdrp > 0.9 and areas[i] < 50) or
-                                        (eccentricity > 0.993 and 3.5 < factr < 4 and 17 < mlength < 25 and r < 0.12)):
-                                            type = 2
-                                        elif (((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[i] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
-                                        factr < 4.1 and areas[i] > 30 and cdrd < 0.059 and mlength < 16) or
-                                        (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[i] < 50 and mlength < 20 and 12. < l1 < 23. and l2 < 3)):
-                                            type = 3
-                                        else:
-                                            type = 2
-                                    else:
-                                        type = 2
-
+               type = 0
+               if eccentricity > 0.99993 and l1 > 700:
+                   type = 4
+               elif areas[i] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[i] < 7) or eccentricity < 0.7:
+                   if areas[i] > 50:
+                       if areas[i] > 62 and mlength > 10.:
+                           type = 2
+                       else:
+                           type = 5
+                   else:
+                       type = 1
+               else:
+                   if cdrd > 0.55:
+                       type = 2
+                   elif areas[i] > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
+                       if factr > 9 or l1/5 > mlength and factr > 3.9 or mlength > 40 and mlength < 80 and areas[i] > 100 and factr > 5:
+                           type = 2
+                       else:
+                           type = 3
+                   elif eccentricity > 0.9995 and mlength > 40 and cdrp > 0.8:
+                       if eccentricity > 0.9998 and mlength > 90 and mlength < 130:
+                           type = 3
+                       else:
+                           type = 4
+                   else:
+                       if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and eccentricity > 0.96:
+                           if areas[i] > 33:
+                               type = 3
+                           elif eccentricity > 0.999:
+                               type = 2
+                           else:
+                               type = 2
+                       elif eccentricity < 0.985 and r < 0.21 and (cdrd < 0.015 or cdrp > 0.88) and mlength > 9 and mlength < 18:
+                           type = 3
+                       elif eccentricity < 0.985 and eccentricity > 0.97 and r < 0.21 and mlength > 9 and mlength < 18 and cdrp > 0.83 and areas[i] < 30:
+                           type = 3
+                       elif eccentricity > 0.975 and eccentricity < 0.99 and r < 0.22 and factr < 3.7 and mlength > 7.6 and mlength < 18 and cdrd < 0.023:
+                           type = 3
+                       elif eccentricity > 0.99 and l1 < 15. and cdrp > 0.86 and cdrd < 0.1 and areas[i] > 28 and areas[i] < 35:
+                           type = 3
+                       else:
+                           if factr > 4.6 and areas[i] < 100 or areas[i] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
+                               type = 2
+                           else:
+                               if l1 > 100 and l2 < 12 and areas[i] > 40 and areas[i] < 60 and factr < 3.8:
+                                   type = 3
+                               elif (abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05:
+                                   type = 3
+                               elif cdrd < 0.7 and factr > 6:
+                                   type = 2
+                               elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[i] < 82): #random magic
+                                   type = 3
+                               elif ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[i] < 100)):
+                                   type = 3
+                               else:
+                                   if eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
+                                       type = 4
+                                   elif eccentricity > 0.999 and factr < 3.14 and areas[i] > 58 and l1/25 > l2:
+                                       type = 3
+                                   elif eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
+                                       type = 2
+                                   elif eccentricity > 0.992 and eccentricity < 0.999 and areas[i] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98:
+                                       type = 4
+                                   elif cdrp > 0.75 and cdrd < 0.182 and ((areas[i] > 28) or (areas[i] < 28 and mlength > 17)):
+                                       if (eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[i] < 62:#Worm catchers
+                                           type = 2
+                                       elif eccentricity > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4:
+                                           type = 2
+                                       elif eccentricity < 0.99 and eccentricity > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2:
+                                           type = 2
+                                       elif eccentricity > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and areas[i] < 50:
+                                           type = 2
+                                       elif eccentricity > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12:
+                                           type = 2
+                                       elif ((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[i] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
+                                       factr < 4.1 and areas[i] > 30 and cdrd < 0.059 and mlength < 16):
+                                           type = 3
+                                       elif (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[i] < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3):
+                                           type = 3
+                                       else:
+                                           type = 2
+                                   elif cdrp > 0.75 and cdrd < 0.05 and areas[i] > 30:
+                                       type = 6
+                                   elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and eccentricity > 0.92 and eccentricity < 0.999:
+                                       type = 3
+                                   else:
+                                       type = 2
                 print >>f, str(iid) + ',' + get_type(str(type))
                 append = get_abbr(str(type))
                 if files[0][-1] == '/':
