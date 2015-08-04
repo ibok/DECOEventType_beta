@@ -400,7 +400,7 @@ for files in filelist:
     pixavg = sum(sum(image))/(len(image)*len(image[0]))
     if pixavg > 4:
         type = 7
-        print >>f, (str(iid) + ',' + get_type(str(type)))
+        print >>f, str(iid) + ',' + get_type(str(type))
         append = get_abbr(str(type))
         continue # Skips picture
 
@@ -544,7 +544,7 @@ for files in filelist:
                                     else:
                                         type = 2
 
-                print >>f, (str(iid) + ',' + get_type(str(type)))
+                print >>f, str(iid) + ',' + get_type(str(type))
                 append = get_abbr(str(type))
                 if files[0][-1] == '/':
                     files[0] = files[0][:-1]
