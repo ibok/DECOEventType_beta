@@ -345,7 +345,6 @@ f = open('classifications.out', 'w')
 def get_chars(x, opt): #Returns string version of type and/or appending char.
     if opt == 0:
         return {
-            0 : 'null',
             1 : 'spot',
             2 : 'worm',
             3 : 'track',
@@ -356,7 +355,6 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
         }[x]
     else:
         return {
-            0 : '_x',
             1 : '_s',
             2 : '_w',
             3 : '_t',
@@ -451,93 +449,92 @@ for files in flist:
             """Code block that analyzes the most likely type of event inside
             the image group currently being analyzed."""
 
-            # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
+            # 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
             if args.contours == 40:
-                type = 0
-                if ecc > 0.99993 and l1 > 700:
+                if ecc > .99993 and l1 > 700:
                     type = 4
-                elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and ecc < 0.945 or bg.b_area < 7) or ecc < 0.7:
+                elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
                     if bg.b_area > 50:
-                        if bg.b_area > 62 and mlength > 10.:
+                        if bg.b_area > 62 and mlength > 10:
                             type = 2
                         else:
                             type = 5
                     else:
                         type = 1
                 else:
-                    if cdrd > 0.55:
+                    if cdrd > .55:
                         type = 2
                     elif bg.b_area > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
-                        if factr > 9 or l1/5 > mlength and factr > 3.9 or mlength > 40 and mlength < 80 and bg.b_area > 100 and factr > 5:
+                        if ( factr > 9 ) or ( l1/5 > mlength and factr > 3.9 ) or ( 80 > mlength > 40 and bg.b_area > 100 and factr > 5 ):
                             type = 2
                         else:
                             type = 3
-                    elif ecc > 0.9995 and mlength > 40 and cdrp > 0.8:
-                        if ecc > 0.9998 and mlength > 90 and mlength < 130:
-                            type = 3
-                        else:
-                            type = 4
+                    elif ecc > .9998 and 130 > mlength > 90:
+                        type = 3
+                    elif ecc > .9995 and mlength > 40 and cdrp > .8:
+                        type = 4
                     else:
-                        if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and ecc > 0.96:
+                        if (cdrp > .978 and cdrd < .01 or cdrp > .96 and cdrd < .0047 or cdrp > .9 and r < .02 and cdrd < .055 and factr < 5) and ecc > .96:
                             if bg.b_area > 33:
                                 type = 3
-                            elif ecc > 0.999:
-                                type = 2
                             else:
                                 type = 2
-                        elif ecc < 0.985 and r < 0.21 and (cdrd < 0.015 or cdrp > 0.88) and mlength > 9 and mlength < 18:
-                            type = 3
-                        elif ecc < 0.985 and ecc > 0.97 and r < 0.21 and mlength > 9 and mlength < 18 and cdrp > 0.83 and bg.b_area < 30:
-                            type = 3
-                        elif ecc > 0.975 and ecc < 0.99 and r < 0.22 and factr < 3.7 and mlength > 7.6 and mlength < 18 and cdrd < 0.023:
-                            type = 3
-                        elif ecc > 0.99 and l1 < 15. and cdrp > 0.86 and cdrd < 0.1 and bg.b_area > 28 and bg.b_area < 35:
+                        elif ( r < .22 and (ecc < .985 and (cdrd < .015 or cdrp > .88) and 18 > mlength > 9 or
+
+                            .97 < ecc < .985 and 18 > mlength > 9 and cdrp > .83 and bg.b_area < 30 or
+
+                            .99 > ecc > .975 and factr < 3.7 and 18 > mlength > 7.6 and cdrd < .023) or
+
+                                ecc > .99 and l1 < 15 and cdrp > .86 and cdrd < .1 and 35 > bg.b_area > 28 ):
                             type = 3
                         else:
-                            if factr > 4.6 and bg.b_area < 100 or bg.b_area < 24 or ecc <= 0.978 or r > 0.2 and factr > 4.:
+                            if (factr > 4.6 and bg.b_area < 100) or bg.b_area < 24 or ecc < .979 or (r > .2 and factr > 4):
                                 type = 2
                             else:
-                                if l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8:
-                                    type = 3
-                                elif (abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and ecc > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05:
-                                    type = 3
-                                elif cdrd < 0.7 and factr > 6:
+                                if cdrd < .7 and factr > 6:
                                     type = 2
-                                elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and ecc > 0.993 and mlength > 12) and bg.b_area < 82: #random magic
-                                    type = 3
-                                elif ((cdrp > 0.6 and ecc > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and bg.b_area < 100):
+                                elif ( l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8 or
+
+                                    (abs(ratx) > .99 or abs(raty) > .99) and abs(ratx) > .93 and abs(raty) > .93 and
+                                    ecc > .99 and factr < 2.95 and factr > 2. and cdrd > .05 or
+
+                                    (cdrp > .9 and cdrd < .02 and factr < 3.1 and ecc > .993 and mlength > 12) and bg.b_area < 82 or
+
+                                    ((cdrp > .6 and ecc > .9923 and factr < 3.1 or cdrp > .88) and (cdrd < .03 or abs(ratx) > .996 or abs(raty) > .996) and bg.b_area < 100) ):
                                     type = 3
                                 else:
-                                    if ecc > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
-                                        type = 4
-                                    elif ecc > 0.999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
+                                    if ecc > .999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
                                         type = 3
-                                    elif ecc > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
+                                    elif ecc > .999 and .86 < cdrp < .92 and mlength > 23:
                                         type = 2
-                                    elif ecc > 0.992 and ecc < 0.999 and bg.b_area < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98:
+                                    elif ( ecc > .999 and ((l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1) or
+
+                                        ecc > .992 and bg.b_area < 50 and .98 > abs(ratx) > .96 and abs(raty) > .96) ):
                                         type = 4
-                                    elif cdrp > 0.75 and cdrd < 0.182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
-                                        if (ecc > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and bg.b_area < 62:#Worm catchers
+                                    elif cdrp > .75 and cdrd < .182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
+                                        if ( (ecc > .9996 or r < .028) and cdrp < .9 and mlength < 30 and bg.b_area < 62 or
+
+                                            ecc > .99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4 or
+
+                                            ecc < .99 and ecc > .975 and mlength < 17 and l1 < 16 and l2 > 2 and r > .2 or
+
+                                            ecc > .993 and (factr < 3 and 28 < mlength < 40 and .94 > cdrp > .9 and bg.b_area < 50 or
+
+                                                3.5 < factr < 4 and 17 < mlength < 25 and r < .12) ):
                                             type = 2
-                                        elif ecc > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4:
-                                            type = 2
-                                        elif ecc < 0.99 and ecc > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2:
-                                            type = 2
-                                        elif ecc > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and bg.b_area < 50:
-                                            type = 2
-                                        elif ecc > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12:
-                                            type = 2
-                                        elif ((factr < 3.76 and ecc > 0.99 and cdrd < 0.06 and r < 0.13 and (bg.b_area > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
-                                        factr < 4.1 and bg.b_area > 30 and cdrd < 0.059 and mlength < 16):
-                                            type = 3
-                                        elif (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and bg.b_area < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3):
+                                        elif ( factr < 3.76 and ecc > .99 and cdrd < .06 and r < .13 and (bg.b_area > 60 or mlength > 10)
+                                            and max(abs(ratx), abs(raty)) > .935 and min(abs(ratx), abs(raty)) > .875 or
+
+                                        factr < 4.1 and bg.b_area > 30 and cdrd < 0.059 and mlength < 16 or
+
+                                        (factr < 4.16 and cdrp > .74 and cdrd < .012 and bg.b_area < 50 and mlength < 20 and 12 < l1 < 23 and l2 < 3) ):
                                             type = 3
                                         else:
                                             type = 2
-                                    elif cdrp > 0.75 and cdrd < 0.05 and bg.b_area > 30:
+                                    elif cdrp > .75 and cdrd < .05 and bg.b_area > 30:
                                         type = 6
-                                    elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and ecc > 0.92 and ecc < 0.999:
+                                    elif .45 < cdrp < .6 and .2 < cdrd < .5 and .999 > ecc > .92:
                                         type = 3
                                     else:
                                         type = 2
