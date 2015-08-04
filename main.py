@@ -10,7 +10,7 @@ f = open('classifications.out', 'w')
 
    Appends first letter of suspected event type to name of file."""
 
-import argparse, math, os, re, sys
+import argparse, math, os, sys
 import numpy as np
 from PIL import Image
 from skimage import measure
@@ -277,29 +277,13 @@ def get_info(group):
     else:
         return [map(int, maxdist[2]), map(int, maxdist[1])]
 
-def efs(group):
+def opt_contour(group):
     # Removes duplicate contour points
     tearr = []
     for b in group.blobs:
         for i in range(0, len(b.x)):
-            tearr.append([float(b.x[i]), float(b.y[i])])
-    retarr = []
-    for z in range(0, len(tearr)):
-        if not tearr[z] in retarr:
-            retarr.append(tearr[z])
-    return retarr
-
-def fakeTracksFilter(bg, l1):
-    tecc = 0.
-    bnum = 0
-    for b in bg.blobs:
-        if b.area > 60:
-            return False #Probably a real track
-        bnum += 1
-        tecc += b.maxdist/b.perimeter
-    if bg.area > l1/17 or tecc/bnum > 0.03:
-        return True
-    return False
+            tearr.append((float(b.x[i]), float(b.y[i])))
+    return sorted(set(tearr))
 
 def calcslp(num, dem):
     # Automatic slope filtering function that filters out inf or -inf slopes
@@ -312,6 +296,12 @@ def calcslp(num, dem):
 
 def findDist(line, point):
     return abs(-line.m*point[0]+point[1]-(line.p[1] - line.m*line.p[0]))/float(np.sqrt((-line.m)**2 + 1))
+
+def print_type(iid, type):
+    print >>f, str(iid) + ',' + get_chars(type, 0)
+
+def exit(): # stops program
+    raise SystemExit
 
 # Get an image file name from the command line
 p = argparse.ArgumentParser(description="Histogram luminance of a JPG image")
@@ -332,34 +322,36 @@ blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        help="Remove blobs below some minimum area")
 args = p.parse_args()
 
-# Recursive listing of all files in a directory
+# Recursively list all files in a directory, checking for valid image types
 filegen = os.walk(args.folder[0])
 
-farr = []
-parr =  []
-for root, afile, i in filegen:
-    farr.append(i)
-    parr.append(root)
+flist = []
+img_types = ('jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm' +
+            'spi tiff webp xbm xv').split(' ') #Most of these are useless...
 
-filelist = []
+# Create file list!
+for root, afile, i in filegen:
+    for fil in i:
+        if fil.split('.')[-1] in img_types:
+            flist.append((root, root + '/' + fil))
+
 info_arr = []
 pt_arr = []
 
-for i in range(0,len(parr)):
-    for filename in farr[i]:
-        if re.search('\.jpe?g',filename,re.IGNORECASE):
-            filelist.append([parr[i], parr[i] + '/' + filename])
+# Check if the folder contains valid image files and if not, exit
+if len(flist) == 0:
+    print('No image files were found.') and exit()
 
 def get_chars(x, opt): #Returns string version of type and/or appending char.
     if opt == 0:
         return {
-            '0' : 'null',
-            '1' : 'spot',
-            '2' : 'worm',
-            '3' : 'track',
-            '4' : 'ambig',
-            '5' : 'big_spot',
-            '6' : 'track_lowconf'
+            0 : 'null',
+            1 : 'spot',
+            2 : 'worm',
+            3 : 'track',
+            4 : 'ambig',
+            5 : 'big_spot',
+            6 : 'track_lowconf'
         }[x]
     else:
         return {
@@ -372,13 +364,16 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
             '6' : '_l'
         }[x]
 
-for files in filelist:
+for files in flist:
     # Fix filename if it contains extra slash
     efile = files[1].replace('//','/')
-    # Load each image and convert pixel values to grayscale intensities
+
+    # Prepare image for filename change
     fullname = efile.split('/')[-1]
     iid = fullname.split('.')[0]
     tail = fullname.split('.')[-1]
+
+    # Load each image and convert pixel values to grayscale intensities
     img = Image.open(efile).convert("L")
     image = []
     pix = img.load()
@@ -393,11 +388,10 @@ for files in filelist:
     # Find average pixel value (grayscale) for noise classification
     image = np.array(image, dtype=float)
     pixavg = sum(sum(image))/(len(image)*len(image[0]))
-    if pixavg > 4:
+    if pixavg > 4: # Skips picture if av. px. val is too high
         type = 7
-        print >>f, str(iid) + ',' + get_type(str(type))
-        append = get_abbr(str(type))
-        continue # Skips picture
+        print_type(iid, type)
+        continue
 
     # Calculate contours using the scikit-image marching squares algorithm,
     # store as Blobs, and group the Blobs into associated clusters
@@ -407,9 +401,8 @@ for files in filelist:
 
     # Go through each group
     for g in groups:
-        info = get_info(g)
-        info_arr.append(info)
-        pt_arr.append(efs(g))
+        info_arr.append(get_info(g))
+        pt_arr.append(opt_contour(g))
 
     # Apply a threshold to the image pixel values
     if args.thresh != None:
@@ -422,11 +415,11 @@ for files in filelist:
             ecc = (np.sqrt( l1**2 - l2**2 ) / l1)
             # Calculate summative distance from the maximum distance
             # line of all points in the group's blob's contours, then weight.
-            stat = info_arr[i][0]
-            endd = info_arr[i][1]
-            _i = Line(calcslp((float(info_arr[i][0][1]) - info_arr[i][1][1]),(float(info_arr[i][0][0]) - info_arr[i][1][0])), stat)
+            init = info_arr[i][0]
+            final = info_arr[i][1]
+            _i = Line(calcslp((float(info_arr[i][0][1]) - info_arr[i][1][1]),(float(info_arr[i][0][0]) - info_arr[i][1][0])), init)
             tdist = 0.
-            mlength = distance(stat, endd)
+            mlength = distance(init, final)
             for pt in pt_arr[i]:
                 tdist += findDist(_i, pt)
             factr = tdist/mlength #arbitrary normalizing factor
@@ -436,6 +429,7 @@ for files in filelist:
             ratios in both the X and Y direction to find the centerpoint
             displacement product (cdrp) and difference (cdrd) of the image
             group."""
+
             bgtarea = 0.
             carr = [0, 0]
             for b in bg.blobs:
@@ -454,8 +448,7 @@ for files in filelist:
             cdrd = abs(ratx-raty)
 
             """Code block that analyzes the most likely type of event inside
-            the image group currently being analyzed. One of its faults is the
-            analysis of the whole image as opposed to each blob individually"""
+            the image group currently being analyzed."""
 
             # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
@@ -510,9 +503,9 @@ for files in filelist:
                                     type = 3
                                 elif cdrd < 0.7 and factr > 6:
                                     type = 2
-                                elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and ecc > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and bg.b_area < 82): #random magic
+                                elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and ecc > 0.993 and mlength > 12) and bg.b_area < 82: #random magic
                                     type = 3
-                                elif ((cdrp > 0.6 and ecc > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and bg.b_area < 100)):
+                                elif ((cdrp > 0.6 and ecc > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and bg.b_area < 100):
                                     type = 3
                                 else:
                                     if ecc > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
@@ -547,12 +540,10 @@ for files in filelist:
                                         type = 3
                                     else:
                                         type = 2
-                print >>f, str(iid) + ',' + get_chars(str(type), 0)
+                print_type(iid, type)
                 append = get_chars(str(type), 1)
-                if files[0][-1] == '/':
-                    files[0] = files[0][:-1]
+                fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
                 if (not iid[-2:] == append):
-                    os.rename(efile, files[0] + '/' + iid + append + '.' + tail)
+                    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
             else:
-                print('As of now only image analysis at contour level 40 is supported, sorry.')
-                raise SystemExit
+                print('As of now only image analysis at contour level 40 is supported, sorry.') and exit()
