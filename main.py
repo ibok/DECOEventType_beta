@@ -398,6 +398,11 @@ for files in filelist:
     # Find average pixel value (grayscale) for noise classification
     image = np.array(image, dtype=float)
     pixavg = sum(sum(image))/(len(image)*len(image[0]))
+    if pixavg > 4:
+        type = 7
+        print >>f, (str(iid) + ',' + get_type(str(type)))
+        append = get_abbr(str(type))
+        continue # Skips picture
 
     # Calculate contours using the scikit-image marching squares algorithm,
     # store as Blobs, and group the Blobs into associated clusters
@@ -466,11 +471,9 @@ for files in filelist:
 
             # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
-            if args.contours < 41 or args.contours > 39:
+            if args.contours == 40:
                 type = 0
-                if pixavg > 3:
-                    continue # Skips picture
-                elif eccentricity > 0.99993 and l1 > 700:
+                if eccentricity > 0.99993 and l1 > 700:
                     type = 4
                 elif areas[i] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[i] < 7) or eccentricity < 0.7:
                     if eccentricity > 0.93 and mlength < 8. and areas[i] > 11. or eccentricity > 0.9 and l1 < 10 and areas[i] < 25. and factr < 3.4:
@@ -548,6 +551,5 @@ for files in filelist:
                 if (not iid[-2:] == append):
                     os.rename(efile, files[0] + '/' + iid + append + '.' + tail)
             else:
-                print('To analyze event type, set contour level between (inclusive)\n'
-                + '39 and 41.')
+                print('As of now only image analysis at contour level 40 is supported, sorry.')
                 raise SystemExit
