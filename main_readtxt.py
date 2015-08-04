@@ -353,16 +353,9 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
         }[x]
 
 for files in flist:
-    # Fix filename if it contains extra slash
-    efile = files[1].replace('//','/')
-
-    # Prepare image for filename change
-    fullname = efile.split('/')[-1]
-    iid = fullname.split('.')[0]
-    tail = fullname.split('.')[-1]
-
     # Load each image and convert pixel values to grayscale intensities
-    img = Image.open(efile).convert("L")
+    img = Image.open(files).convert("L")
+    iid = files.split('/')[-1].split('.')[0]
     image = []
     pix = img.load()
 
