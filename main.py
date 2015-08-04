@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-f = open('classifications.out', 'w')
-
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
    Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
@@ -341,6 +339,9 @@ pt_arr = []
 # Check if the folder contains valid image files and if not, exit
 if len(flist) == 0:
     print('No image files were found.') and exit()
+
+# Now that we know the folder has images, write a classification file.
+f = open('classifications.out', 'w')
 
 def get_chars(x, opt): #Returns string version of type and/or appending char.
     if opt == 0:
