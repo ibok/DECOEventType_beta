@@ -356,14 +356,14 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
         }[x]
     else:
         return {
-            '0' : '_x',
-            '1' : '_s',
-            '2' : '_w',
-            '3' : '_t',
-            '4' : '_a',
-            '5' : '_b',
-            '6' : '_l',
-            '7' : '_n'
+            0 : '_x',
+            1 : '_s',
+            2 : '_w',
+            3 : '_t',
+            4 : '_a',
+            5 : '_b',
+            6 : '_l',
+            7 : '_n'
         }[x]
 
 for files in flist:
@@ -542,7 +542,7 @@ for files in flist:
                                     else:
                                         type = 2
                 print_type(iid, type)
-                #append = get_chars(str(type), 1)
+                #append = get_chars(type, 1)
                 #fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
                 #if (not iid[-2:] == append):
                 #    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
