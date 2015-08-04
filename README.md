@@ -29,4 +29,4 @@ For every 542 events there are (according to Heather's classifications):<br>
 82 tracks and<br>
 94 spots
 
-For now only .jpg and .jpeg images can be run using the script.
+[Supported file formats](http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html): jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm spi tiff webp xbm xv
