@@ -10,11 +10,7 @@ f = open('classifications.out', 'w')
 
    Appends first letter of suspected event type to name of file."""
 
-import argparse
-import math
-import os
-import re
-import sys
+import argparse, math, os, re, sys
 import numpy as np
 from PIL import Image
 from skimage import measure
@@ -23,23 +19,19 @@ class Line:
     """Line class that builds a line 'object' that is able to run various
        mathematical tests on itself"""
 
-    def __init__(self, m, p = [0,0]):
-        """Set slope and one intersecting point. Default is (0,0)"""
-        self.m = m*1.
-        self.p = [p[0]*1., p[1]*1.]
+    def __init__(self, m, p):
+        self.m = float(m)
+        self.p = (float(p[0]), float(p[1]))
 
     def calculate_y(self, x):
-        """Calculate own y-value at any x position"""
         return self.m*(x-self.p[0]) + self.p[1]
 
     def intersect(self, line):
-        """Get any intersecting points. If there are 0 or infinity, return
-           a null array"""
         if line.m == self.m:
-            return [None]
+            return NaN
         else:
             xpos = (line.p[1] - self.p[1] + self.m*self.p[0] + line.m*line.p[0])/(self.m - line.m)
-            return [xpos, self.calculate_y(xpos)]
+            return (xpos, self.calculate_y(xpos))
 
 class Blob:
     """Class that defines a 'blob' in an image: the contour of a set of pixels
@@ -61,28 +53,30 @@ class Blob:
 
         # Calculate perimeter of blob using cycling
         self.perimeter = 0
-        for i in range(0, len(x) - 1):
-            p1 = [self.x[i], self.y[i]]
-            p2 = [self.y[i+1], self.y[i+1]]
-            self.perimeter += calcDist(p1, p2)
+        end = len(self.x) - 1
+        for i in range(0, end):
+            a = (self.x[i], self.y[i])
+            b = (self.y[i+1], self.y[i+1])
+            self.perimeter += distance(a, b)
 
         # Find furthest distance between any two blob contour points
         self.maxdist = 0
         end = len(self.x)
         for i in range(0, end):
             for j in range(i, end):
-                pmax = calcDist((self.x[i], self.y[i]), (self.y[j], self.y[j]))
-                if pmax > self.maxdist:
-                    self.maxdist = pmax
+                pt1 = (self.x[i], self.y[i])
+                pt2 = (self.y[j], self.y[j])
+                pdist = distance(pt1, pt2)
+                if pdist > self.maxdist:
+                    self.maxdist = pdist
 
     def distance(self, blob):
         """Calculate the distance between the centroid of this blob contour and
            another one in the xy plane."""
         return np.sqrt((self.xc - blob.xc)**2 + (self.yc-blob.yc)**2)
 
-def calcDist(p1, p2):
-    """Distance formula"""
-    return math.sqrt((float(p1[1]) - p2[1])**2 + (float(p1[0]) - p2[0])**2)
+def distance(a, b):
+    return math.sqrt((a[1] - b[1])**2 + (a[0] - b[0])**2)
 
 class BlobGroup:
     """A list of blobs that is grouped or associated in some way, i.e., if
@@ -91,13 +85,17 @@ class BlobGroup:
     def __init__(self):
         """Initialize a list of stored blobs and the bounding rectangle which
         defines the group."""
+
         self.blobs = []
+        self.count = 0
+        self.area = 0.
+        self.b_area = 0.
+        self.perimeter = 0.
+
         self.xmin =  1e10
         self.xmax = -1e10
         self.ymin =  1e10
         self.ymax = -1e10
-        self.area = 0
-        self.perimeter = 0
 
     def addBlob(self, blob):
         """Add a blob to the group and enlarge the bounding rectangle of the
@@ -108,6 +106,8 @@ class BlobGroup:
         self.ymin = min(self.ymin, blob.y.min())
         self.ymax = max(self.ymax, blob.y.max())
         self.cov  = None
+        self.count += 1
+        self.b_area += blob.area
         self.perimeter += blob.perimeter
 
     def getBoundingBox(self):
@@ -194,7 +194,7 @@ class BlobGroup:
         theta = 0.5 * np.arctan2(2*u11, u20-u02)
         l1 = 0.5*(u20+u02) + 0.5*np.sqrt(4*u11**2 + (u20-u02)**2)
         l2 = 0.5*(u20+u02) - 0.5*np.sqrt(4*u11**2 + (u20-u02)**2)
-        return l1, l2, theta
+        return l1, l2, l1/l2, theta
 
 def findBlobs(image, threshold, minArea=2.):
     """Pass through an image and find a set of blobs/contours above a set
@@ -259,8 +259,8 @@ def get_info(group):
             tearr.append([float(b.x[i]), float(b.y[i])])
     for i in range(0, len(tearr)):
         for j in range(i, len(tearr)):
-            if (calcDist(tearr[i], tearr[j]) > maxdist[0]):
-                maxdist = [calcDist(tearr[i], tearr[j]), tearr[i], tearr[j]]
+            if (distance(tearr[i], tearr[j]) > maxdist[0]):
+                maxdist = [distance(tearr[i], tearr[j]), tearr[i], tearr[j]]
     if maxdist[1][0] < maxdist[2][0]:
         leftmost = maxdist[1][0]
         y1 = maxdist[1][1]
@@ -303,13 +303,10 @@ def fakeTracksFilter(bg, l1):
 
 def calcslp(num, dem):
     # Automatic slope filtering function that filters out inf or -inf slopes
-    if dem == 0:
-        if num == 0:
-            return NaN
-        elif num < 0:
-            return -100000000
-        else:
-            return 100000000
+    if dem == 0 and num == 0:
+        return NaN
+    elif dem == 0:
+        return np.sign(num)*np.sqrt(sys.maxint)
     else:
         return float(num)/dem
 
@@ -335,12 +332,11 @@ blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        help="Remove blobs below some minimum area")
 args = p.parse_args()
 
-folder = args.folder[0]
+# Recursive listing of all files in a directory
+filegen = os.walk(args.folder[0])
 
-#Create array of all image file paths, in all subdirectories
-filegen = os.walk(folder)
-
-farr, parr = [], []
+farr = []
+parr =  []
 for root, afile, i in filegen:
     farr.append(i)
     parr.append(root)
@@ -348,34 +344,33 @@ for root, afile, i in filegen:
 filelist = []
 info_arr = []
 pt_arr = []
-areas = []
 
 for i in range(0,len(parr)):
     for filename in farr[i]:
         if re.search('\.jpe?g',filename,re.IGNORECASE):
             filelist.append([parr[i], parr[i] + '/' + filename])
 
-def get_type(x): #Returns string version of type
-    return {
-        '0' : 'null',
-        '1' : 'spot',
-        '2' : 'worm',
-        '3' : 'track',
-        '4' : 'ambig',
-        '5' : 'big_spot',
-        '6' : 'track_lc' #low confidence
-    }[x]
-
-def get_abbr(y): #Returns substring to append to file
-    return {
-        '0' : '_x',
-        '1' : '_s',
-        '2' : '_w',
-        '3' : '_t',
-        '4' : '_a',
-        '5' : '_b',
-        '6' : '_l'
-    }[y]
+def get_chars(x, opt): #Returns string version of type and/or appending char.
+    if opt == 0:
+        return {
+            '0' : 'null',
+            '1' : 'spot',
+            '2' : 'worm',
+            '3' : 'track',
+            '4' : 'ambig',
+            '5' : 'big_spot',
+            '6' : 'track_lowconf'
+        }[x]
+    else:
+        return {
+            '0' : '_x',
+            '1' : '_s',
+            '2' : '_w',
+            '3' : '_t',
+            '4' : '_a',
+            '5' : '_b',
+            '6' : '_l'
+        }[x]
 
 for files in filelist:
     # Fix filename if it contains extra slash
@@ -415,10 +410,6 @@ for files in filelist:
         info = get_info(g)
         info_arr.append(info)
         pt_arr.append(efs(g))
-        area = 0.
-        for b in g.blobs:
-            area += b.area
-        areas.append(area)
 
     # Apply a threshold to the image pixel values
     if args.thresh != None:
@@ -427,35 +418,32 @@ for files in filelist:
     if args.contours != None:
         for i, bg in enumerate(groups):
             X0, X1, Y0, Y1 = bg.getSquareBoundingBox()
-            l1, l2, theta = bg.getPrincipalMoments(image)
-            eccentricity = (np.sqrt( l1**2 - l2**2 ) / l1)
+            l1, l2, r, theta = bg.getPrincipalMoments(image)
+            ecc = (np.sqrt( l1**2 - l2**2 ) / l1)
             # Calculate summative distance from the maximum distance
             # line of all points in the group's blob's contours, then weight.
             stat = info_arr[i][0]
             endd = info_arr[i][1]
             _i = Line(calcslp((float(info_arr[i][0][1]) - info_arr[i][1][1]),(float(info_arr[i][0][0]) - info_arr[i][1][0])), stat)
             tdist = 0.
-            mlength = calcDist(stat, endd)
+            mlength = distance(stat, endd)
             for pt in pt_arr[i]:
                 tdist += findDist(_i, pt)
-            factr = tdist/mlength
-            r = l2/l1
+            factr = tdist/mlength #arbitrary normalizing factor
 
             """Sequence of statements that calculates the weighted
             center of image contours (by area), then uses the centerpoint
             ratios in both the X and Y direction to find the centerpoint
             displacement product (cdrp) and difference (cdrd) of the image
             group."""
-            numbl = 0
             bgtarea = 0.
             carr = [0, 0]
             for b in bg.blobs:
-                numbl += 1
                 bgtarea += b.perimeter
                 carr[0] += b.xc*b.perimeter
                 carr[1] += b.yc*b.perimeter
-            centx = carr[0]/float(numbl*bgtarea)
-            centy = carr[1]/float(numbl*bgtarea)
+            centx = carr[0]/float(bg.count*bgtarea)
+            centy = carr[1]/float(bg.count*bgtarea)
             diffx_a = centx - bg.xmin
             diffx_b = bg.xmax - centx
             diffy_a = centy - bg.ymin
@@ -472,95 +460,95 @@ for files in filelist:
             # 0 == null/noise ; 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
             if args.contours == 40:
-               type = 0
-               if eccentricity > 0.99993 and l1 > 700:
-                   type = 4
-               elif areas[i] < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and eccentricity < 0.945 or areas[i] < 7) or eccentricity < 0.7:
-                   if areas[i] > 50:
-                       if areas[i] > 62 and mlength > 10.:
-                           type = 2
-                       else:
-                           type = 5
-                   else:
-                       type = 1
-               else:
-                   if cdrd > 0.55:
-                       type = 2
-                   elif areas[i] > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
-                       if factr > 9 or l1/5 > mlength and factr > 3.9 or mlength > 40 and mlength < 80 and areas[i] > 100 and factr > 5:
-                           type = 2
-                       else:
-                           type = 3
-                   elif eccentricity > 0.9995 and mlength > 40 and cdrp > 0.8:
-                       if eccentricity > 0.9998 and mlength > 90 and mlength < 130:
-                           type = 3
-                       else:
-                           type = 4
-                   else:
-                       if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and eccentricity > 0.96:
-                           if areas[i] > 33:
-                               type = 3
-                           elif eccentricity > 0.999:
-                               type = 2
-                           else:
-                               type = 2
-                       elif eccentricity < 0.985 and r < 0.21 and (cdrd < 0.015 or cdrp > 0.88) and mlength > 9 and mlength < 18:
-                           type = 3
-                       elif eccentricity < 0.985 and eccentricity > 0.97 and r < 0.21 and mlength > 9 and mlength < 18 and cdrp > 0.83 and areas[i] < 30:
-                           type = 3
-                       elif eccentricity > 0.975 and eccentricity < 0.99 and r < 0.22 and factr < 3.7 and mlength > 7.6 and mlength < 18 and cdrd < 0.023:
-                           type = 3
-                       elif eccentricity > 0.99 and l1 < 15. and cdrp > 0.86 and cdrd < 0.1 and areas[i] > 28 and areas[i] < 35:
-                           type = 3
-                       else:
-                           if factr > 4.6 and areas[i] < 100 or areas[i] < 24 or eccentricity <= 0.978 or r > 0.2 and factr > 4.:
-                               type = 2
-                           else:
-                               if l1 > 100 and l2 < 12 and areas[i] > 40 and areas[i] < 60 and factr < 3.8:
-                                   type = 3
-                               elif (abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and eccentricity > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05:
-                                   type = 3
-                               elif cdrd < 0.7 and factr > 6:
-                                   type = 2
-                               elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and eccentricity > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and areas[i] < 82): #random magic
-                                   type = 3
-                               elif ((cdrp > 0.6 and eccentricity > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and areas[i] < 100)):
-                                   type = 3
-                               else:
-                                   if eccentricity > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
-                                       type = 4
-                                   elif eccentricity > 0.999 and factr < 3.14 and areas[i] > 58 and l1/25 > l2:
-                                       type = 3
-                                   elif eccentricity > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
-                                       type = 2
-                                   elif eccentricity > 0.992 and eccentricity < 0.999 and areas[i] < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98:
-                                       type = 4
-                                   elif cdrp > 0.75 and cdrd < 0.182 and ((areas[i] > 28) or (areas[i] < 28 and mlength > 17)):
-                                       if (eccentricity > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and areas[i] < 62:#Worm catchers
-                                           type = 2
-                                       elif eccentricity > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4:
-                                           type = 2
-                                       elif eccentricity < 0.99 and eccentricity > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2:
-                                           type = 2
-                                       elif eccentricity > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and areas[i] < 50:
-                                           type = 2
-                                       elif eccentricity > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12:
-                                           type = 2
-                                       elif ((factr < 3.76 and eccentricity > 0.99 and cdrd < 0.06 and r < 0.13 and (areas[i] > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
-                                       factr < 4.1 and areas[i] > 30 and cdrd < 0.059 and mlength < 16):
-                                           type = 3
-                                       elif (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and areas[i] < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3):
-                                           type = 3
-                                       else:
-                                           type = 2
-                                   elif cdrp > 0.75 and cdrd < 0.05 and areas[i] > 30:
-                                       type = 6
-                                   elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and eccentricity > 0.92 and eccentricity < 0.999:
-                                       type = 3
-                                   else:
-                                       type = 2
-                print >>f, str(iid) + ',' + get_type(str(type))
-                append = get_abbr(str(type))
+                type = 0
+                if ecc > 0.99993 and l1 > 700:
+                    type = 4
+                elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= 0.2 and ecc < 0.945 or bg.b_area < 7) or ecc < 0.7:
+                    if bg.b_area > 50:
+                        if bg.b_area > 62 and mlength > 10.:
+                            type = 2
+                        else:
+                            type = 5
+                    else:
+                        type = 1
+                else:
+                    if cdrd > 0.55:
+                        type = 2
+                    elif bg.b_area > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
+                        if factr > 9 or l1/5 > mlength and factr > 3.9 or mlength > 40 and mlength < 80 and bg.b_area > 100 and factr > 5:
+                            type = 2
+                        else:
+                            type = 3
+                    elif ecc > 0.9995 and mlength > 40 and cdrp > 0.8:
+                        if ecc > 0.9998 and mlength > 90 and mlength < 130:
+                            type = 3
+                        else:
+                            type = 4
+                    else:
+                        if (cdrp > 0.978 and cdrd < 0.01 or cdrp > 0.96 and cdrd < 0.0047 or cdrp > 0.9 and r < 0.02 and cdrd < 0.055 and factr < 5.) and ecc > 0.96:
+                            if bg.b_area > 33:
+                                type = 3
+                            elif ecc > 0.999:
+                                type = 2
+                            else:
+                                type = 2
+                        elif ecc < 0.985 and r < 0.21 and (cdrd < 0.015 or cdrp > 0.88) and mlength > 9 and mlength < 18:
+                            type = 3
+                        elif ecc < 0.985 and ecc > 0.97 and r < 0.21 and mlength > 9 and mlength < 18 and cdrp > 0.83 and bg.b_area < 30:
+                            type = 3
+                        elif ecc > 0.975 and ecc < 0.99 and r < 0.22 and factr < 3.7 and mlength > 7.6 and mlength < 18 and cdrd < 0.023:
+                            type = 3
+                        elif ecc > 0.99 and l1 < 15. and cdrp > 0.86 and cdrd < 0.1 and bg.b_area > 28 and bg.b_area < 35:
+                            type = 3
+                        else:
+                            if factr > 4.6 and bg.b_area < 100 or bg.b_area < 24 or ecc <= 0.978 or r > 0.2 and factr > 4.:
+                                type = 2
+                            else:
+                                if l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8:
+                                    type = 3
+                                elif (abs(ratx) > 0.99 or abs(raty) > 0.99) and abs(ratx) > 0.93 and abs(raty) > 0.93 and ecc > 0.99 and factr < 2.95 and factr > 2. and cdrd > 0.05:
+                                    type = 3
+                                elif cdrd < 0.7 and factr > 6:
+                                    type = 2
+                                elif (cdrp > 0.9 and cdrd < 0.02 and factr < 3.1 and ecc > 0.993 and mlength > 12) and not (fakeTracksFilter(bg, l1) and bg.b_area < 82): #random magic
+                                    type = 3
+                                elif ((cdrp > 0.6 and ecc > 0.9923 and factr < 3.1 or cdrp > 0.88) and (cdrd < 0.03 or abs(ratx) > 0.996 or abs(raty) > 0.996) and not (fakeTracksFilter(bg, l1) and bg.b_area < 100)):
+                                    type = 3
+                                else:
+                                    if ecc > 0.999 and (l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1):
+                                        type = 4
+                                    elif ecc > 0.999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
+                                        type = 3
+                                    elif ecc > 0.999 and cdrp < 0.92 and cdrp > 0.86 and mlength > 23:
+                                        type = 2
+                                    elif ecc > 0.992 and ecc < 0.999 and bg.b_area < 50 and abs(ratx) > 0.96 and abs(ratx) < 0.98 and abs(raty) > 0.96 and abs(ratx) < 0.98:
+                                        type = 4
+                                    elif cdrp > 0.75 and cdrd < 0.182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
+                                        if (ecc > 0.9996 or r < 0.028) and cdrp < 0.9 and mlength < 30 and bg.b_area < 62:#Worm catchers
+                                            type = 2
+                                        elif ecc > 0.99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4:
+                                            type = 2
+                                        elif ecc < 0.99 and ecc > 0.975 and mlength < 17 and l1 < 16 and l2 > 2 and r > 0.2:
+                                            type = 2
+                                        elif ecc > 0.993 and factr < 3. and mlength < 40 and mlength > 28 and cdrp > 0.9 and cdrp < 0.94 and bg.b_area < 50:
+                                            type = 2
+                                        elif ecc > 0.993 and factr < 4 and factr > 3.5 and mlength < 25 and mlength > 17 and r < 0.12:
+                                            type = 2
+                                        elif ((factr < 3.76 and ecc > 0.99 and cdrd < 0.06 and r < 0.13 and (bg.b_area > 60. or mlength > 10.) and max(abs(ratx), abs(raty)) > 0.935) and (abs(ratx) > 0.9 and abs(raty) > 0.86) or
+                                        factr < 4.1 and bg.b_area > 30 and cdrd < 0.059 and mlength < 16):
+                                            type = 3
+                                        elif (factr < 4.16 and cdrp > 0.74 and cdrd < 0.012 and bg.b_area < 50 and mlength < 20 and l1 < 23. and l1 > 12. and l2 < 3):
+                                            type = 3
+                                        else:
+                                            type = 2
+                                    elif cdrp > 0.75 and cdrd < 0.05 and bg.b_area > 30:
+                                        type = 6
+                                    elif cdrp < 0.6 and cdrp > 0.45 and cdrd < 0.5 and cdrd > 0.2 and ecc > 0.92 and ecc < 0.999:
+                                        type = 3
+                                    else:
+                                        type = 2
+                print >>f, str(iid) + ',' + get_chars(str(type), 0)
+                append = get_chars(str(type), 1)
                 if files[0][-1] == '/':
                     files[0] = files[0][:-1]
                 if (not iid[-2:] == append):
