@@ -12,7 +12,15 @@ To use, type into the terminal:
 
 The script is not completely accurate and is being improved. Currently the average accuracy is roughly 68 percent and the speed is about 2 seconds per jpeg image. Ambiguous events are not included in the accuracy calculation.
 
-Details about accuracy:
+### Info
+
+main.py is the main analysis script, to be run on a given folder.<br>
+main_text.py runs on text files with the same syntax.<br>
+main_obf.py is the same as main_text.py, but is obfuscated with [pyminifier](https://github.com/liftoff/pyminifier)<br>
+
+All scripts output the predictions into the file "classifications.out" located in the folder you have `cd`ed into
+
+### Details about accuracy
 
 The script was run on a large sample of worms and tracks...
 
