@@ -1,26 +1,9 @@
 #!/usr/bin/env python
 # WIPAC-DECO particle event analyzer (beta)
 # Licensed under the GNU v3.0 (open-source)
-YQ=float
-YN=len
-YS=range
-Yd=min
-YR=max
-Yh=None
-Yx=int
-Ye=False
-YF=True
-Yv=map
-YP=sorted
-Ys=set
-YA=abs
-Yw=type
-YK=str
-Ya=SystemExit
-YI=open
-YW=xrange
-YG=sum
-Yi=enumerate
+YQ=float;YN=len;YS=range;Yd=min;YR=max;Yh=None;Yx=int;Ye=False
+YF=True;Yv=map;YP=sorted;Ys=set;YA=abs;Yw=type;YK=str;Ya=SystemExit
+YI=open;YW=xrange;YG=sum;Yi=enumerate
 import argparse,math,os,sys
 zT=argparse.ArgumentParser
 Yb=sys.maxint
