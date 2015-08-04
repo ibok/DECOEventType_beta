@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-"""Runs through a given folder of images and prints out the type of event for
-   each blob group in that event.
-
-   Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
-   For ease of parsing I/O, Output is in the format: id:event_type.
-   Appends first letter of suspected event type to name of file."""
-
 import argparse, math, os, sys
 import numpy as np
 from PIL import Image
@@ -302,8 +295,8 @@ def exit(): # stops program
 
 # Get an image file name from the command line
 p = argparse.ArgumentParser(description="Histogram luminance of a JPG image")
-p.add_argument("folder", nargs=1,
-               help="JPG folder name")
+p.add_argument("text_file", nargs=1,
+               help="Image filepath names")
 p.add_argument("-x", "--threshold", dest="thresh", type=float,
                default=None,
                help="Threshold the pixel map")
@@ -319,18 +312,13 @@ blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        help="Remove blobs below some minimum area")
 args = p.parse_args()
 
-# Recursively list all files in a directory, checking for valid image types
-filegen = os.walk(args.folder[0])
-
-flist = []
-img_types = ('jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm' +
-            'spi tiff webp xbm xv').split(' ') #Most of these are useless...
+# Read text file containing directory paths
+fpaths = open(args.text_file[0], 'r+')
 
 # Create file list!
-for root, afile, i in filegen:
-    for fil in i:
-        if fil.split('.')[-1] in img_types:
-            flist.append((root, root + '/' + fil))
+flist = []
+for line in fpaths:
+    flist.append(line.strip('\n'))
 
 info_arr = []
 pt_arr = []
