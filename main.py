@@ -390,8 +390,7 @@ for files in flist:
     image = np.array(image, dtype=float)
     pixavg = sum(sum(image))/(len(image)*len(image[0]))
     if pixavg > 4: # Skips picture if av. px. val is too high
-        type = 7
-        print_type(iid, type)
+        print_type(iid, 7)
         continue
 
     # Calculate contours using the scikit-image marching squares algorithm,
