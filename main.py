@@ -451,7 +451,7 @@ for files in flist:
 
             # 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
-            if args.contours == 40:
+            if args.contours == 40 or args.contours == 20:
                 if ecc > .99993 and l1 > 700:
                     type = 4
                 elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
