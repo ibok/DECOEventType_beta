@@ -2,7 +2,6 @@
 
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
-
    Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
    For ease of parsing I/O, Output is in the format: id:event_type.
    Appends first letter of suspected event type to name of file."""
@@ -177,6 +176,10 @@ class BlobGroup:
             ybar = M01/M00
             self.cov = np.vstack([[M20/M00 - xbar*xbar, M11/M00 - xbar*ybar],
                                   [M11/M00 - xbar*ybar, M02/M00 - ybar*ybar]])
+            xCent = xbar + self.xmin
+            yCent = ybar + self.ymin
+            print >>xy, iid, xCent, yCent
+        
         return self.cov
 
     def getPrincipalMoments(self, image):
@@ -341,7 +344,7 @@ if len(flist) == 0:
 
 # Now that we know the folder has images, write a classification file.
 f = open('classifications.out', 'w')
-
+xy = open('xandyCent.out', 'w')
 def get_chars(x, opt): #Returns string version of type and/or appending char.
     if opt == 0:
         return {
@@ -451,7 +454,7 @@ for files in flist:
 
             # 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
             # 5 = Alpha Particle; 6 = Track, low confidence
-            if args.contours == 40 or args.contours == 20:
+            if args.contours == 40:
                 if ecc > .99993 and l1 > 700:
                     type = 4
                 elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
