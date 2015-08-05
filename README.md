@@ -20,26 +20,22 @@ main_obf.py is the same as main_text.py, but is obfuscated with [pyminifier](htt
 
 All scripts output the predictions into the file "classifications.out" located in the folder you have `cd`ed into
 
-### Details about accuracy
+### Accuracy
 
-The script was run on a large sample of worms and tracks...
+The script was run on a large sample of worms, tracks and spots:
 
-Out of 32 worms it identified 30 correctly.<br>
-Accuracy: 93.55%<br>
+Out of 518 worms it identified 471 correctly:<br>
+90.9% accuracy<br>
 <br>
-Out of 47 tracks it identified 18 correctly.<br>
-Accuracy: 38.30%<br>
+Out of 129 tracks it identified 67 correctly:<br>
+51.9% accuracy<br>
 <br>
-Out of 14 spots it identified 10 correctly.<br>
-Accuracy: 71.43%<br>
-<br>
-The program identified all 3 ambiguous events correctly.<br>
+Out of 88 spots it identified 76 correctly:<br>
+86.4% accuracy<br>
 
-There may have been some bias as the some of the events were rerun on the calibration sample. For these stats, Matt Meehan and I analyzed the events and compared our classification to the program's. The test was ["double blind"](https://explorable.com/double-blind-experiment) to ensure accurate stats.
+Overall accuracy is then 76.4%
 
-The program has since been updated and these stats may not be completely accurate.
-
-For every 542 events there are (according to Heather's classifications):<br>
+For every 542 events there are:<br>
 363 worms,<br>
 82 tracks and<br>
 94 spots
