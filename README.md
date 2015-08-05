@@ -40,4 +40,4 @@ For every 542 events there are:<br>
 82 tracks and<br>
 94 spots
 
-[Supported file](http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html) formats include: jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm spi tiff webp xbm xv
+List of [Supported image file](http://pillow.readthedocs.org/en/latest/handbook/image-file-formats.html) formats
