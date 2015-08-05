@@ -1,7 +1,6 @@
 # DECOEventType_beta
-ilhan's python event classification script<br><br>
+ilhan's python event classification script
 ## Script info
-
 ### Usage
 
 The script can be run in any python environment. The output is in the form [image id]:[event type].
