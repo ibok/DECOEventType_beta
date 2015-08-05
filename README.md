@@ -1,6 +1,5 @@
 # DECOEventType_beta
 ilhan's python event classification script<br><br>
-**Status:** [![Build Status](https://travis-ci.org/ibok/DECOEventType_beta.svg)](https://travis-ci.org/ibok/DECOEventType_beta)
 ## Script info
 
 ### Usage
