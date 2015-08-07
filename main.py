@@ -367,6 +367,10 @@ def get_chars(x, opt): #Returns string version of type and/or appending char.
             7 : '_n'
         }[x]
 
+#boop is a list of the list of eventIDs and types. 
+#It is used at the bottom of the script to eliminate mutiple classifications for an eventID.        
+boop = []
+
 for files in flist:
     # Fix filename if it contains extra slash
     efile = files[1].replace('//','/')
@@ -541,10 +545,37 @@ for files in flist:
                                         type = 3
                                     else:
                                         type = 2
-                print_type(iid, type)
+                #print_type(iid, type)
+                #this code block eliminates when there is double classification (one event ID, multiple classifications). 
+                #if there is a track and a worm or spot, we keep the track
+                #if there is a worm and a spot, we keep the worm
+                something = True
+                for x in boop:
+                    if iid == x[0]:
+                        something = False
+                        ctype = get_chars(type, 0)
+                        if 'track' in x[1]:
+                            pass
+                        elif 'worm' in x[1]:
+                            if 'track' in ctype:
+                                x[1] = ctype
+                        elif 'spot' in x[1]:
+                            if 'track' in ctype or 'worm' in ctype:
+                                x[1] = ctype
+                        elif 'ambig' in x[1]:
+                            if 'track' in ctype or 'worm' in ctype or 'spot' in ctype:
+                                x[1] = ctype
+                        elif 'noise' in x[1]:
+                                if 'track' in ctype or 'worm' in ctype or 'spot' in ctype or 'ambig' in ctype:
+                                    x[1] = ctype
+                if something:
+                    boop.append([iid, get_chars(type, 0)])
                 #append = get_chars(type, 1)
                 #fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
                 #if (not iid[-2:] == append):
                 #    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
             else:
                 print('As of now only image analysis at contour level 40 is supported, sorry.') and exit()
+   
+for x in boop:
+    print_type(x[0], x[1])
