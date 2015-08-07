@@ -25,8 +25,8 @@ The script was run on a large sample of worms, tracks and spots:
 Out of 518 worms it identified 471 correctly:<br>
 90.9% accuracy<br>
 <br>
-Out of 129 tracks it identified 67 correctly:<br>
-51.9% accuracy<br>
+Out of 123 tracks it identified 98 correctly (2 exempted for noise):<br>
+79.7% accuracy<br>
 <br>
 Out of 88 spots it identified ~~76~~ 85 correctly (I looked through the wrong ones manually):<br>
 96.6% accuracy<br>
