@@ -12,9 +12,15 @@ The script is not completely accurate and is being improved. Currently the avera
 
 ### Info
 
-main.py is the main analysis script, to be run on a given folder.<br>
-main_text.py runs on text files with the same syntax.<br>
-main_obf.py is the same as main_text.py, but is obfuscated with [pyminifier](https://github.com/liftoff/pyminifier)<br>
+`main` and `main_txt` are folders containing the version of the script that runs with the folder as input and a textfile as input, respectively.
+
+Each folder has the following contents (_ = corresponding name):
+
+_.py : Original unedited script
+_obf.py : Obfuscated and compressed script
+_arc.pyz : Binary pyz file version of script
+
+`hotspotsclass` contains the script to be run on the xandyCent.out file to identify hotspots.
 
 All scripts output the predictions into the file "classifications.out" located in the folder you have `cd`ed into
 
