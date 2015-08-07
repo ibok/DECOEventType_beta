@@ -33,7 +33,7 @@ Out of 88 spots it identified ~~76~~ 85 correctly (I looked through the wrong on
 
 Overall accuracy is then 89.13%
 
-For every 542 events there are:<br>
+For every 539 events there are:<br>
 363 worms,<br>
 82 tracks and<br>
 94 spots
