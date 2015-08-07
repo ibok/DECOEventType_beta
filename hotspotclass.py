@@ -68,4 +68,4 @@ nonhotspots = [i for i in h if h[i] < 3]
 for i in range(0, len(hotspots)):
     print >>f, event_ID[hotspots[i]], "hotspot", (xCent[i], yCent[i])
 
-print 'to see eventIDs with hostpots, look at hotspotclass.out file in your folder'
+print 'to see eventIDs with hotspots, look at hotspotclass.out file in your folder'
