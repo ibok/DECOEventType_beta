@@ -8,7 +8,7 @@ The script can be run in any python environment. The output is in the form [imag
 To use, type into the terminal:
 > /path/to/main.py path/to/img_folder --c 40
 
-The script is not completely accurate and is being improved. Currently the average accuracy is roughly 68 percent and the speed is about 2 seconds per jpeg image. Ambiguous events are not included in the accuracy calculation.
+The script is not completely accurate and is being improved. Currently the average accuracy is 89 percent and the speed is approximately 1.864 seconds per jpeg image.
 
 ### Info
 
@@ -22,7 +22,7 @@ All scripts output the predictions into the file "classifications.out" located i
 
 The script was run on a large sample of worms, tracks and spots:
 
-Out of 518 worms it identified 471 correctly:<br>
+Out of 497 worms it identified 471 correctly:<br>
 90.9% accuracy<br>
 <br>
 Out of 123 tracks it identified 98 correctly (2 exempted for noise):<br>
