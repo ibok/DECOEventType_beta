@@ -3,6 +3,8 @@ ilhan's python event classification script
 ## Script info
 ### Usage
 
+For DECO please use `/main_txt/main_txt.py/` to run on condor/cobalt.
+
 The script can be run in any python environment. The output is in the form [image id]:[event type].
 
 To use, type into the terminal:
