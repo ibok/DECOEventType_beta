@@ -1,4 +1,7 @@
-###this script works in conjunction with a plotBlobs script here ( https://github.com/ibok/DECOEventType_beta ). It analyzes the x and y coordinates of event candidates and then determines if the blob ("event") is a hotspot or an event. If the coordinates are repeated several times, then the blob is a hotspot. It prints any images with hotspots to another file (in whatever folder you're in) called "hotspotsclass.out"
+###this script works in conjunction with a plotBlobs script here ( https://github.com/ibok/DECOEventType_beta ). 
+###It analyzes the x and y coordinates of event candidates and then determines if the blob ("event") is a hotspot or an event.
+###If the coordinates are repeated several times, then the blob is a hotspot. 
+###It prints any images with hotspots to another file (in whatever folder you're in) called "hotspotsclass.out"
 
 infile = open('xandyCent.out', 'r')
 f = open('hotspotsclass.out', 'w')
