@@ -3,6 +3,7 @@
 ###If the coordinates are repeated several times, then the blob is a hotspot. 
 ###It prints any images with hotspots to another file (in whatever folder you're in) called "hotspotsclass.out"
 
+
 infile = open('xandyCent.out', 'r')
 f = open('hotspotsclass.out', 'w')
 
@@ -58,22 +59,13 @@ hotspot_xyCent = hotspot_xCent + hotspot_yCent
 #find duplicated coordinate values (hotspots) and their indexes.
 h = Counter(hotspot_xyCent)
 
-hotspots = [i for i in h if h[i] >= 2]
+hotspots = [i for i in h if h[i] >= 3]
 
-nonhotspots = [i for i in h if h[i] <= 1]
+nonhotspots = [i for i in h if h[i] < 3]
 
 #classification with event_ID
 
 for i in range(0, len(hotspots)):
     print >>f, event_ID[hotspots[i]], "hotspot", (xCent[i], yCent[i])
 
-hotspot_amount = len(hotspots)
-nonhotspot_amount = len(nonhotspots)
-print 'number of hotspots:', hotspot_amount
-print 'number of nonhotspots:', nonhotspot_amount
-
-total_amount = hotspot_amount + nonhotspot_amount
-total_images = len(event_Id)
-
-if total_amount != total_images:
-    print 'error: something went wrong?'
+print 'to see eventIDs with hostpots, look at hotspotclass.out file in your folder'
