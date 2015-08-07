@@ -351,7 +351,8 @@ def get_type(x): #Returns string version of type
         1 : 'spot',
         2 : 'worm',
         3 : 'ambig',
-        4 : 'track'
+        4 : 'track',
+        5 : 'noise'
     }[x]
 
 def compareType(old, new): #Checks if type is less common
@@ -382,7 +383,7 @@ for files in flist:
     image = np.array(image, dtype=float)
     pixavg = sum(sum(image))/(len(image)*len(image[0]))
     if pixavg > 4: # Skips picture if av. px. val is too high
-        print_type(iid, 7)
+        print_type(iid, 5)
         continue
 
     # Calculate contours using the scikit-image marching squares algorithm,
