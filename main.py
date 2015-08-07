@@ -249,11 +249,6 @@ def groupBlobs(blobs, maxDist):
 def get_info(group):
     # Returns parsed image data of any picture
     tearr = []
-    maxdist = [0]
-    tarr = [0, 0, 0]
-    intervs = 100.
-    first = True
-
     for b in group.blobs:
         for i in range(0, len(b.x)):
             tearr.append([float(b.x[i]), float(b.y[i])])
@@ -265,16 +260,11 @@ def get_info(group):
         leftmost = maxdist[1][0]
         y1 = maxdist[1][1]
         rightmost = maxdist[2][0]
+        return [map(int, maxdist[1]), map(int, maxdist[2])]
     else:
         leftmost = maxdist[2][0]
         y1 = maxdist[2][1]
         rightmost = maxdist[1][0]
-        first = False
-    num = maxdist[1][1] - maxdist[2][1]
-    dem = maxdist[1][0] - maxdist[2][0]
-    if first:
-        return [map(int, maxdist[1]), map(int, maxdist[2])]
-    else:
         return [map(int, maxdist[2]), map(int, maxdist[1])]
 
 def opt_contour(group):
