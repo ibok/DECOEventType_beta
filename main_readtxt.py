@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 
+"""Runs through a given folder of images and prints out the type of event for
+   each blob group in that event.
+   Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
+   For ease of parsing I/O, Output is in the format: id:event_type.
+   Appends first letter of suspected event type to name of file."""
+
 import argparse, math, os, sys
 import numpy as np
 from PIL import Image
@@ -170,6 +176,10 @@ class BlobGroup:
             ybar = M01/M00
             self.cov = np.vstack([[M20/M00 - xbar*xbar, M11/M00 - xbar*ybar],
                                   [M11/M00 - xbar*ybar, M02/M00 - ybar*ybar]])
+            xCent = xbar + self.xmin
+            yCent = ybar + self.ymin
+            print >>xy, iid, xCent, yCent
+
         return self.cov
 
     def getPrincipalMoments(self, image):
@@ -268,11 +278,11 @@ def get_info(group):
         return [map(int, maxdist[2]), map(int, maxdist[1])]
 
 def opt_contour(group):
-    # Removes duplicate contour points
     tearr = []
     for b in group.blobs:
         for i in range(0, len(b.x)):
             tearr.append((float(b.x[i]), float(b.y[i])))
+    # Removes duplicate contour points
     return sorted(set(tearr))
 
 def calcslp(num, dem):
@@ -288,7 +298,7 @@ def findDist(line, point):
     return abs(-line.m*point[0]+point[1]-(line.p[1] - line.m*line.p[0]))/float(np.sqrt((-line.m)**2 + 1))
 
 def print_type(iid, type):
-    print >>f, str(iid) + ',' + get_chars(type, 0)
+    print >>f, str(iid) + ',' + get_type(type)
 
 def exit(): # stops program
     raise SystemExit
@@ -296,7 +306,7 @@ def exit(): # stops program
 # Get an image file name from the command line
 p = argparse.ArgumentParser(description="Histogram luminance of a JPG image")
 p.add_argument("text_file", nargs=1,
-               help="Image filepath names")
+               help="Image path list file")
 p.add_argument("-x", "--threshold", dest="thresh", type=float,
                default=None,
                help="Threshold the pixel map")
@@ -312,13 +322,20 @@ blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        help="Remove blobs below some minimum area")
 args = p.parse_args()
 
+img_types = ('jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm' +
+            'spi tiff webp xbm xv').split(' ')
+
 # Read text file containing directory paths
 fpaths = open(args.text_file[0], 'r+')
 
-# Create file list!
+# Create file lists
 flist = []
 for line in fpaths:
-    flist.append(line.strip('\n'))
+    clin = line.strip()
+    if clin.split('.')[-1] in img_types:
+        flist.append(clin)
+
+flist = sorted(set(flist)) #Remove dupes
 
 info_arr = []
 pt_arr = []
@@ -329,33 +346,25 @@ if len(flist) == 0:
 
 # Now that we know the folder has images, write a classification file.
 f = open('classifications.out', 'w')
+xy = open('xandyCent.out', 'w')
 
-def get_chars(x, opt): #Returns string version of type and/or appending char.
-    if opt == 0:
-        return {
-            1 : 'spot',
-            2 : 'worm',
-            3 : 'track',
-            4 : 'ambig',
-            5 : 'big_spot',
-            6 : 'track_lowconf',
-            7 : 'noise'
-        }[x]
-    else:
-        return {
-            1 : '_s',
-            2 : '_w',
-            3 : '_t',
-            4 : '_a',
-            5 : '_b',
-            6 : '_l',
-            7 : '_n'
-        }[x]
+def get_type(x): #Returns string version of type
+    return {
+        1 : 'spot',
+        2 : 'worm',
+        3 : 'ambig',
+        4 : 'track'
+    }[x]
 
-for files in flist:
+def compareType(old, new): #Checks if type is less common
+    return new if new > old else old
+
+for afile in flist:
+
+    iid = afile.split('/')[-1].split('.')[0]
+
     # Load each image and convert pixel values to grayscale intensities
-    img = Image.open(files).convert("L")
-    iid = files.split('/')[-1].split('.')[0]
+    img = Image.open(afile).convert("L")
     image = []
     pix = img.load()
 
@@ -388,7 +397,8 @@ for files in flist:
     if args.thresh != None:
         image[image < args.thresh] = 0.
 
-    if args.contours != None:
+    if args.contours == 40:
+        type = 0
         for i, bg in enumerate(groups):
             X0, X1, Y0, Y1 = bg.getSquareBoundingBox()
             l1, l2, r, theta = bg.getPrincipalMoments(image)
@@ -428,101 +438,98 @@ for files in flist:
             cdrd = abs(ratx-raty)
 
             """Code block that analyzes the most likely type of event inside
-            the image group currently being analyzed."""
+            the image group currently being analyzed. Prints out only the rarest
+            type. Track > Worm > Spot"""
 
-            # 1 == Spot ; 2 == Worm ; 3 == Track ; 4 == Ambiguous;
-            # 5 = Alpha Particle; 6 = Track, low confidence
-            if args.contours == 40 or args.contours == 20:
-                if ecc > .99993 and l1 > 700:
-                    type = 4
-                elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
-                    if bg.b_area > 50:
-                        if bg.b_area > 62 and mlength > 10:
-                            type = 2
-                        else:
-                            type = 5
+            # 1 == Spot 2 == Worm 3 == Ambiguous 4 == Track
+            if ecc > .99993 and l1 > 700:
+                type = compareType(type, 3)
+            elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
+                if bg.b_area > 50:
+                    if bg.b_area > 62 and mlength > 10:
+                        type = compareType(type, 2)
                     else:
-                        type = 1
+                        type = compareType(type, 1)
                 else:
-                    if cdrd > .55:
-                        type = 2
-                    elif bg.b_area > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
-                        if ( factr > 9 ) or ( l1/5 > mlength and factr > 3.9 ) or ( 80 > mlength > 40 and bg.b_area > 100 and factr > 5 ):
-                            type = 2
+                    type = compareType(type, 1)
+            else:
+                if cdrd > .55:
+                    type = compareType(type, 2)
+                elif bg.b_area > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
+                    if ( factr > 9 ) or ( l1/5 > mlength and factr > 3.9 ) or ( 80 > mlength > 40 and bg.b_area > 100 and factr > 5 ):
+                        type = compareType(type, 2)
+                    else:
+                        type = 4
+                elif ecc > .9998 and 130 > mlength > 90:
+                    type = 4
+                elif ecc > .9995 and mlength > 40 and cdrp > .8:
+                    type = compareType(type, 3)
+                else:
+                    if (cdrp > .978 and cdrd < .01 or cdrp > .96 and cdrd < .0047 or cdrp > .9 and r < .02 and cdrd < .055 and factr < 5) and ecc > .96:
+                        if bg.b_area > 33:
+                            type = 4
                         else:
-                            type = 3
-                    elif ecc > .9998 and 130 > mlength > 90:
-                        type = 3
-                    elif ecc > .9995 and mlength > 40 and cdrp > .8:
+                            type = compareType(type, 2)
+                    elif ( r < .22 and (ecc < .985 and (cdrd < .015 or cdrp > .88) and 18 > mlength > 9 or
+
+                        .97 < ecc < .985 and 18 > mlength > 9 and cdrp > .83 and bg.b_area < 30 or
+
+                        .99 > ecc > .975 and factr < 3.7 and 18 > mlength > 7.6 and cdrd < .023) or
+
+                            ecc > .99 and l1 < 15 and cdrp > .86 and cdrd < .1 and 35 > bg.b_area > 28 ):
                         type = 4
                     else:
-                        if (cdrp > .978 and cdrd < .01 or cdrp > .96 and cdrd < .0047 or cdrp > .9 and r < .02 and cdrd < .055 and factr < 5) and ecc > .96:
-                            if bg.b_area > 33:
-                                type = 3
-                            else:
-                                type = 2
-                        elif ( r < .22 and (ecc < .985 and (cdrd < .015 or cdrp > .88) and 18 > mlength > 9 or
-
-                            .97 < ecc < .985 and 18 > mlength > 9 and cdrp > .83 and bg.b_area < 30 or
-
-                            .99 > ecc > .975 and factr < 3.7 and 18 > mlength > 7.6 and cdrd < .023) or
-
-                                ecc > .99 and l1 < 15 and cdrp > .86 and cdrd < .1 and 35 > bg.b_area > 28 ):
-                            type = 3
+                        if (factr > 4.6 and bg.b_area < 100) or bg.b_area < 24 or ecc < .979 or (r > .2 and factr > 4):
+                            type = compareType(type, 2)
                         else:
-                            if (factr > 4.6 and bg.b_area < 100) or bg.b_area < 24 or ecc < .979 or (r > .2 and factr > 4):
-                                type = 2
+                            if cdrd < .7 and factr > 6:
+                                type = compareType(type, 2)
+                            elif ( l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8 or
+
+                                (abs(ratx) > .99 or abs(raty) > .99) and abs(ratx) > .93 and abs(raty) > .93 and
+                                ecc > .99 and factr < 2.95 and factr > 2. and cdrd > .05 or
+
+                                (cdrp > .9 and cdrd < .02 and factr < 3.1 and ecc > .993 and mlength > 12) and bg.b_area < 82 or
+
+                                ((cdrp > .6 and ecc > .9923 and factr < 3.1 or cdrp > .88) and (cdrd < .03 or abs(ratx) > .996 or abs(raty) > .996) and bg.b_area < 100) ):
+                                type = 4
                             else:
-                                if cdrd < .7 and factr > 6:
-                                    type = 2
-                                elif ( l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8 or
+                                if ecc > .999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
+                                    type = 4
+                                elif ecc > .999 and .86 < cdrp < .92 and mlength > 23:
+                                    type = compareType(type, 2)
+                                elif ( ecc > .999 and ((l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1) or
 
-                                    (abs(ratx) > .99 or abs(raty) > .99) and abs(ratx) > .93 and abs(raty) > .93 and
-                                    ecc > .99 and factr < 2.95 and factr > 2. and cdrd > .05 or
+                                    ecc > .992 and bg.b_area < 50 and .98 > abs(ratx) > .96 and abs(raty) > .96) ):
+                                    type = compareType(type, 3)
+                                elif cdrp > .75 and cdrd < .182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
+                                    if ( (ecc > .9996 or r < .028) and cdrp < .9 and mlength < 30 and bg.b_area < 62 or
 
-                                    (cdrp > .9 and cdrd < .02 and factr < 3.1 and ecc > .993 and mlength > 12) and bg.b_area < 82 or
+                                        ecc > .99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4 or
 
-                                    ((cdrp > .6 and ecc > .9923 and factr < 3.1 or cdrp > .88) and (cdrd < .03 or abs(ratx) > .996 or abs(raty) > .996) and bg.b_area < 100) ):
-                                    type = 3
-                                else:
-                                    if ecc > .999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
-                                        type = 3
-                                    elif ecc > .999 and .86 < cdrp < .92 and mlength > 23:
-                                        type = 2
-                                    elif ( ecc > .999 and ((l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1) or
+                                        ecc < .99 and ecc > .975 and mlength < 17 and l1 < 16 and l2 > 2 and r > .2 or
 
-                                        ecc > .992 and bg.b_area < 50 and .98 > abs(ratx) > .96 and abs(raty) > .96) ):
+                                        ecc > .993 and (factr < 3 and 28 < mlength < 40 and .94 > cdrp > .9 and bg.b_area < 50 or
+
+                                            3.5 < factr < 4 and 17 < mlength < 25 and r < .12) ):
+                                        type = compareType(type, 2)
+                                    elif ( factr < 3.76 and ecc > .99 and cdrd < .06 and r < .13 and (bg.b_area > 60 or mlength > 10)
+                                        and max(abs(ratx), abs(raty)) > .935 and min(abs(ratx), abs(raty)) > .875 or
+
+                                    factr < 4.1 and bg.b_area > 30 and cdrd < 0.059 and mlength < 16 or
+
+                                    (factr < 4.16 and cdrp > .74 and cdrd < .012 and bg.b_area < 50 and mlength < 20 and 12 < l1 < 23 and l2 < 3) ):
                                         type = 4
-                                    elif cdrp > .75 and cdrd < .182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
-                                        if ( (ecc > .9996 or r < .028) and cdrp < .9 and mlength < 30 and bg.b_area < 62 or
-
-                                            ecc > .99 and l1 > 400 and l1 < 600 and l2 > 60 and factr > 3.4 or
-
-                                            ecc < .99 and ecc > .975 and mlength < 17 and l1 < 16 and l2 > 2 and r > .2 or
-
-                                            ecc > .993 and (factr < 3 and 28 < mlength < 40 and .94 > cdrp > .9 and bg.b_area < 50 or
-
-                                                3.5 < factr < 4 and 17 < mlength < 25 and r < .12) ):
-                                            type = 2
-                                        elif ( factr < 3.76 and ecc > .99 and cdrd < .06 and r < .13 and (bg.b_area > 60 or mlength > 10)
-                                            and max(abs(ratx), abs(raty)) > .935 and min(abs(ratx), abs(raty)) > .875 or
-
-                                        factr < 4.1 and bg.b_area > 30 and cdrd < 0.059 and mlength < 16 or
-
-                                        (factr < 4.16 and cdrp > .74 and cdrd < .012 and bg.b_area < 50 and mlength < 20 and 12 < l1 < 23 and l2 < 3) ):
-                                            type = 3
-                                        else:
-                                            type = 2
-                                    elif cdrp > .75 and cdrd < .05 and bg.b_area > 30:
-                                        type = 6
-                                    elif .45 < cdrp < .6 and .2 < cdrd < .5 and .999 > ecc > .92:
-                                        type = 3
                                     else:
-                                        type = 2
-                print_type(iid, type)
-                #append = get_chars(type, 1)
-                #fnom = files[0][:-1] if files[0][-1] == '/' else files[0]
-                #if (not iid[-2:] == append):
-                #    os.rename(efile, fnom + '/' + iid + append + '.' + tail)
-            else:
-                print('As of now only image analysis at contour level 40 is supported, sorry.') and exit()
+                                        type = compareType(type, 2)
+                                elif cdrp > .75 and cdrd < .05 and bg.b_area > 30:
+                                    type = 4
+                                elif .45 < cdrp < .6 and .2 < cdrd < .5 and .999 > ecc > .92:
+                                    type = 4
+                                else:
+                                    type = compareType(type, 2)
+            if type == 4: #Exit if definite track
+                break
+        print_type(iid, type)
+    else:
+        print('Only image analysis at contour level 40 is supported, sorry.') and exit()
