@@ -312,6 +312,8 @@ def exit(): # stops program
 p = argparse.ArgumentParser(description="Histogram luminance of a JPG image")
 p.add_argument("folder", nargs=1,
                help="JPG folder name")
+p.add_argument("output_file", nargs=1,
+               help="Output file name")
 p.add_argument("-x", "--threshold", dest="thresh", type=float,
                default=None,
                help="Threshold the pixel map")
@@ -348,8 +350,8 @@ if len(flist) == 0:
     print('No image files were found.') and exit()
 
 # Now that we know the folder has images, write a classification file.
-f = open('classifications.out', 'w')
-xy = open('xandyCent.out', 'w')
+f = open(args.output_file[0], 'w')
+xy = open(fname.split('.')[0] + '_xandyCent' + fname.split('.')[-1], 'w')
 
 def get_type(x): #Returns string version of type
     return {
