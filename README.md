@@ -28,10 +28,10 @@ Out of 518 worms it identified 471 correctly:<br>
 Out of 129 tracks it identified 67 correctly:<br>
 51.9% accuracy<br>
 <br>
-Out of 88 spots it identified 76 correctly:<br>
-86.4% accuracy<br>
+Out of 88 spots it identified ~~76~~ 85 correctly (I looked through the wrong ones manually):<br>
+96.6% accuracy<br>
 
-Overall accuracy is then 76.4%
+Overall accuracy is then 79.8%
 
 For every 542 events there are:<br>
 363 worms,<br>
