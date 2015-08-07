@@ -350,7 +350,8 @@ if len(flist) == 0:
     print('No image files were found.') and exit()
 
 # Now that we know the folder has images, write a classification file.
-f = open(args.output_file[0], 'w')
+fname = args.output_file[0]
+f = open(fname, 'w')
 xy = open(fname.split('.')[0] + '_xandyCent' + fname.split('.')[-1], 'w')
 
 def get_type(x): #Returns string version of type
