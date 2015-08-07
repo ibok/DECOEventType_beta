@@ -14,7 +14,7 @@ The script is not completely accurate and is being improved. Currently the avera
 
 `main` and `main_txt` are folders containing the version of the script that runs with the folder as input and a textfile as input, respectively.
 
-Each folder has the following contents (_ = corresponding name):
+Each folder has the following contents ( _ = corresponding name ):
 
 _.py : Original unedited script
 _obf.py : Obfuscated and compressed script
