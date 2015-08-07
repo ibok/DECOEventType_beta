@@ -1,7 +1,4 @@
-###this script works in conjunction with main.py
-###It analyzes the x and y coordinates of event candidates and then determines if the blob ("event") is a hotspot or an event.
-###If the coordinates are repeated several times, then the blob is a hotspot. 
-###It prints any images with hotspots to another file (in whatever folder you're in) called "hotspotsclass.out"
+###this script works in conjunction with a plotBlobs script here ( https://github.com/ibok/DECOEventType_beta ). It analyzes the x and y coordinates of event candidates and then determines if the blob ("event") is a hotspot or an event. If the coordinates are repeated several times, then the blob is a hotspot. It prints any images with hotspots to another file (in whatever folder you're in) called "hotspotsclass.out"
 
 
 infile = open('xandyCent.out', 'r')
@@ -39,7 +36,7 @@ hotspot_xCent = defaultdict(list)
 for i, item in enumerate(xCent_rounded):
 	hotspot_xCent[item].append(i)
 for k,v in hotspot_xCent.items():
-	if len(v)>2:
+	if len(v)>5:
 		xhotspot_img_index.extend(v)
 hotspot_xCent = sorted(xhotspot_img_index)
 
@@ -48,7 +45,7 @@ hotspot_yCent = defaultdict(list)
 for i, item in enumerate(yCent_rounded):
     hotspot_yCent[item].append(i)
 for k,v in hotspot_yCent.items():
-    if len(v)>2:
+    if len(v)>5:
         yhotspot_img_index.extend(v)
 hotspot_yCent = sorted(yhotspot_img_index)
 
@@ -59,13 +56,13 @@ hotspot_xyCent = hotspot_xCent + hotspot_yCent
 #find duplicated coordinate values (hotspots) and their indexes.
 h = Counter(hotspot_xyCent)
 
-hotspots = [i for i in h if h[i] >= 3]
-
-nonhotspots = [i for i in h if h[i] < 3]
+hotspots = [i for i in h if h[i] == 2]
 
 #classification with event_ID
 
 for i in range(0, len(hotspots)):
-    print >>f, event_ID[hotspots[i]], "hotspot", (xCent[i], yCent[i])
+    print >>f, event_ID[hotspots[i]], "hotspot"
 
-print 'to see eventIDs with hotspots, look at hotspotclass.out file in your folder'
+#for i in range(0, len(nonhotspots))
+
+print 'to see eventIDs with hostpots, look at hotspotclass.out file in your folder'
