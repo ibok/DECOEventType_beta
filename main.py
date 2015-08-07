@@ -283,6 +283,28 @@ def calcslp(num, dem):
         return np.sign(num)*np.sqrt(sys.maxint)
     else:
         return float(num)/dem
+        
+def con_diff(bg):
+    """Sequence of statements that calculates the weighted
+    center of image contours (by area), then uses the centerpoint
+    ratios in both the X and Y direction to find the centerpoint
+    displacement product (cdrp) and difference (cdrd) of the image
+    group."""
+    bgtarea = 0.
+    carr = [0, 0]
+    for b in bg.blobs:
+        bgtarea += b.perimeter
+        carr[0] += b.xc*b.perimeter
+        carr[1] += b.yc*b.perimeter
+    centx = carr[0]/(bg.count*bgtarea)
+    centy = carr[1]/(bg.count*bgtarea)
+    diffx_a = centx - bg.xmin
+    diffx_b = bg.xmax - centx
+    diffy_a = centy - bg.ymin
+    diffy_b = bg.ymax - centy
+    ratx = min(diffx_a, diffx_b)/max(diffx_a, diffx_b)
+    raty = min(diffy_a, diffy_b)/max(diffy_a, diffy_b)
+    return ratx*raty, abs(ratx-raty)
 
 def findDist(line, point):
     return abs(-line.m*point[0]+point[1]-(line.p[1] - line.m*line.p[0]))/float(np.sqrt((-line.m)**2 + 1))
@@ -305,7 +327,7 @@ blobGroup.add_argument("-c", "--contours", dest="contours", type=float,
                        default=None,
                        help="Identify blob contours above some threshold")
 blobGroup.add_argument("-d", "--distance", dest="distance", type=float,
-                       default=75.,
+                       default=100.,
                        help="Group blobs within some distance of each other")
 blobGroup.add_argument("-a", "--min-area", dest="area", type=float,
                        default=2.,
@@ -394,7 +416,6 @@ for files in flist:
     if args.contours == 40:
         type = 0
         for i, bg in enumerate(groups):
-            X0, X1, Y0, Y1 = bg.getSquareBoundingBox()
             l1, l2, r, theta = bg.getPrincipalMoments(image)
             ecc = (np.sqrt( l1**2 - l2**2 ) / l1)
             # Calculate summative distance from the maximum distance
@@ -407,29 +428,8 @@ for files in flist:
             for pt in pt_arr[i]:
                 tdist += findDist(_i, pt)
             factr = tdist/mlength #arbitrary normalizing factor
-
-            """Sequence of statements that calculates the weighted
-            center of image contours (by area), then uses the centerpoint
-            ratios in both the X and Y direction to find the centerpoint
-            displacement product (cdrp) and difference (cdrd) of the image
-            group."""
-
-            bgtarea = 0.
-            carr = [0, 0]
-            for b in bg.blobs:
-                bgtarea += b.perimeter
-                carr[0] += b.xc*b.perimeter
-                carr[1] += b.yc*b.perimeter
-            centx = carr[0]/float(bg.count*bgtarea)
-            centy = carr[1]/float(bg.count*bgtarea)
-            diffx_a = centx - bg.xmin
-            diffx_b = bg.xmax - centx
-            diffy_a = centy - bg.ymin
-            diffy_b = bg.ymax - centy
-            ratx = min([diffx_a, diffx_b])/max([diffx_a, diffx_b])
-            raty = min([diffy_a, diffy_b])/max([diffy_a, diffy_b])
-            cdrp = ratx*raty
-            cdrd = abs(ratx-raty)
+            
+            cdrp, cdrd = con_diff(bg)
 
             """Code block that analyzes the most likely type of event inside
             the image group currently being analyzed. Prints out only the rarest
