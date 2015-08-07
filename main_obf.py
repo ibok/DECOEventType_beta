@@ -1,367 +1,351 @@
 #!/usr/bin/env python
-# WIPAC DECO event labeling script. GNU 3.0 Open-sourced
-Yr=float;YO=len;YL=range;YC=min;Ya=max;YE=None;Yu=int
-YF=False;Yy=True;Yh=map;YA=sorted;YV=set;YK=abs
-Yd=type;Yl=str;YN=SystemExit;YM=open;YI=xrange;Ym=sum;Ys=enumerate
+Nq=float;NC=len;NQ=range;NR=min;NE=max;Nr=None;Nj=int;NO=False;Ns=True;NL=map
+NG=abs;NT=type;NI=str;NH=SystemExit;NY=open;Ny=sorted;NP=set;Nu=xrange;NF=sum
+Nd=enumerate
 import argparse,math,os,sys
-YT=argparse.ArgumentParser
-Yc=sys.maxint
-Yb=math.sqrt
+cX=argparse.ArgumentParser
+cS=sys.maxint
+cb=math.sqrt
 import numpy as np
-Yo=np.vstack
-Yx=np.mean
-Ye=np.array
-Yq=np.YK
-YG=np.arctan2
-Yf=np.Ym
-YP=np.sqrt
-Yi=np.sign
+Nk=np.vstack
+Nc=np.mean
+Nl=np.array
+ND=np.NG
+Nn=np.arctan2
+Nv=np.NF
+Nw=np.sqrt
+NA=np.sign
 from PIL import Image
-Yg=Image.YM
+NK=Image.NY
 from skimage import measure
-YU=measure.find_contours
-class BS:
- def __init__(B,m,p):
-  B.m=Yr(m)
-  B.p=(Yr(p[0]),Yr(p[1]))
- def Bl(B,x):
-  return B.m*(x-B.p[0])+B.p[1]
- def BN(B,BT):
-  if BT.m==B.m:
+Nx=measure.find_contours
+class cB:
+ def __init__(c,m,p):
+  c.m=Nq(m)
+  c.p=(Nq(p[0]),Nq(p[1]))
+ def cH(c,x):
+  return c.m*(x-c.p[0])+c.p[1]
+ def cY(c,cA):
+  if cA.m==c.m:
    return NaN
   else:
-   Y=(BT.p[1]-B.p[1]+B.m*B.p[0]+BT.m*BT.p[0])/(B.m-BT.m)
-   return(Y,B.Bl(Y))
-class Bn:
- def __init__(B,x,y):
-  B.x=x
-  B.y=y
-  B.xc=Yx(x)
-  B.yc=Yx(y)
-  B.area=0.
-  n=YO(x)
-  for i in YL(0,n):
-   B.area+=0.5*(y[i]+y[i-1])*(x[i]-x[i-1])
-  B.perimeter=0
-  T=YO(B.x)-1
-  for i in YL(0,T):
-   a=(B.x[i],B.y[i])
-   b=(B.y[i+1],B.y[i+1])
-   B.perimeter+=BM(a,b)
-  B.maxdist=0
-  T=YO(B.x)
-  for i in YL(0,T):
-   for j in YL(i,T):
-    b=(B.x[i],B.y[i])
-    c=(B.y[j],B.y[j])
-    x=BM(b,c)
-    if x>B.maxdist:
-     B.maxdist=x
- def BM(B,P):
-  return YP((B.xc-P.xc)**2+(B.yc-P.yc)**2)
-def BM(a,b):
- return Yb((a[1]-b[1])**2+(a[0]-b[0])**2)
-class YB:
- def __init__(B):
-  B.blobs=[]
-  B.count=0
-  B.area=0.
-  B.b_area=0.
-  B.perimeter=0.
-  B.xmin= 1e10
-  B.xmax=-1e10
-  B.ymin= 1e10
-  B.ymax=-1e10
- def BI(B,P):
-  B.blobs.append(P)
-  B.xmin=YC(B.xmin,P.x.YC())
-  B.xmax=Ya(B.xmax,P.x.Ya())
-  B.ymin=YC(B.ymin,P.y.YC())
-  B.ymax=Ya(B.ymax,P.y.Ya())
-  B.cov =YE
-  B.count+=1
-  B.b_area+=P.area
-  B.perimeter+=P.perimeter
- def Bm(B):
-  return(B.xmin,B.xmax,B.ymin,B.ymax)
- def Bs(B):
-  q,f,o,G=(B.xmin,B.xmax,B.ymin,B.ymax)
-  xL=Yq(f-q)
-  yL=Yq(G-o)
+   N=(cA.p[1]-c.p[1]+c.m*c.p[0]+cA.m*cA.p[0])/(c.m-cA.m)
+   return(N,c.cH(N))
+class co:
+ def __init__(c,x,y):
+  c.x=x
+  c.y=y
+  c.xc=Nc(x)
+  c.yc=Nc(y)
+  c.area=0.
+  n=NC(x)
+  for i in NQ(0,n):
+   c.area+=0.5*(y[i]+y[i-1])*(x[i]-x[i-1])
+  c.perimeter=0
+  w=NC(c.x)-1
+  for i in NQ(0,w):
+   a=(c.x[i],c.y[i])
+   b=(c.y[i+1],c.y[i+1])
+   c.perimeter+=cy(a,b)
+  c.maxdist=0
+  w=NC(c.x)
+  for i in NQ(0,w):
+   for j in NQ(i,w):
+    D=(c.x[i],c.y[i])
+    v=(c.y[j],c.y[j])
+    k=cy(D,v)
+    if k>c.maxdist:
+     c.maxdist=k
+ def cy(c,n):
+  return Nw((c.xc-n.xc)**2+(c.yc-n.yc)**2)
+def cy(a,b):
+ return cb((a[1]-b[1])**2+(a[0]-b[0])**2)
+class ce:
+ def __init__(c):
+  c.blobs=[]
+  c.count=0
+  c.area=0.
+  c.b_area=0.
+  c.perimeter=0.
+  c.xmin= 1e10
+  c.xmax=-1e10
+  c.ymin= 1e10
+  c.ymax=-1e10
+ def cP(c,n):
+  c.blobs.append(n)
+  c.xmin=NR(c.xmin,n.x.NR())
+  c.xmax=NE(c.xmax,n.x.NE())
+  c.ymin=NR(c.ymin,n.y.NR())
+  c.ymax=NE(c.ymax,n.y.NE())
+  c.cov =Nr
+  c.count+=1
+  c.b_area+=n.area
+  c.perimeter+=n.perimeter
+ def cu(c):
+  return(c.xmin,c.xmax,c.ymin,c.ymax)
+ def cF(c):
+  A,l,K,x=(c.xmin,c.xmax,c.ymin,c.ymax)
+  xL=ND(l-A)
+  yL=ND(x-K)
   if xL>yL:
-   o-=0.5*(xL-yL)
-   G+=0.5*(xL-yL)
+   K-=0.5*(xL-yL)
+   x+=0.5*(xL-yL)
   else:
-   q-=0.5*(yL-xL)
-   f+=0.5*(yL-xL)
-  return(q,f,o,G)
- def BH(B,g):
-  ny,nx=g.shape
+   A-=0.5*(yL-xL)
+   l+=0.5*(yL-xL)
+  return(A,l,K,x)
+ def cd(c,Q):
+  ny,nx=Q.shape
   x0,x1,y0,y1=bg.getBoundingBox()
-  B.area=(x1-x0)*(y1-y0)
-  i0,i1=[ny-Yu(t)for t in(y1,y0)]
-  j0,j1=[Yu(t)for t in(x0,x1)]
-  i=1
-  i0=0 if i0-i<0 else i0-i
-  i1=ny-1 if i1>ny-1 else i1+i
-  j0=0 if j0-i<0 else j0-i
-  j1=nx-1 if j1>nx-1 else j1+i
-  return g[i0:i1,j0:j1]
- def BD(B,g,p,q):
-  nx,ny=g.shape
-  e=0.
+  c.area=(x1-x0)*(y1-y0)
+  i0,i1=[ny-Nj(t)for t in(y1,y0)]
+  j0,j1=[Nj(t)for t in(x0,x1)]
+  q=1
+  i0=0 if i0-q<0 else i0-q
+  i1=ny-1 if i1>ny-1 else i1+q
+  j0=0 if j0-q<0 else j0-q
+  j1=nx-1 if j1>nx-1 else j1+q
+  return Q[i0:i1,j0:j1]
+ def cM(c,Q,p,q):
+  nx,ny=Q.shape
+  C=0.
   if p==0 and q==0:
-   e=Yf(g)
+   C=Nv(Q)
   else:
-   for i in YL(0,nx):
+   for i in NQ(0,nx):
     x=0.5+i
-    for j in YL(0,ny):
+    for j in NQ(0,ny):
      y=0.5+j
-     e+=x**p*y**q*g[i,j]
-  return e
- def Bp(B,g):
-  if B.cov==YE:
-   U=B.BH(g).transpose()
-   r=B.BD(U,0,0)
-   O=B.BD(U,1,0)
-   L=B.BD(U,0,1)
-   C=B.BD(U,1,1)
-   a=B.BD(U,2,0)
-   E=B.BD(U,0,2)
-   u=O/r
-   F=L/r
-   B.cov=Yo([[a/r-u*u,C/r-u*F],[C/r-u*F,E/r-F*F]])
-   y=u+B.xmin
-   h=F+B.ymin
-   print>>xy,Bq,y,h
-  return B.cov
- def BX(B,g):
-  A=B.Bp(g)
-  V=A[0,0]
-  K=A[0,1]
-  d=A[1,1]
-  l=0.5*YG(2*K,V-d)
-  l1=0.5*(V+d)+0.5*YP(4*K**2+(V-d)**2)
-  l2=0.5*(V+d)-0.5*YP(4*K**2+(V-d)**2)
-  return l1,l2,l1/l2,l
-def BQ(g,threshold,minArea=2.):
- N=[]
- ny,nx=g.shape
- M=YU(g,threshold)
- for I in M:
-  x=I[:,1]
-  y=ny-I[:,0]
-  P=Bn(x,y)
-  if P.area>=minArea:
-   N.append(P)
- return N
-def BJ(N,maxDist):
- n=YO(N)
- m=[]
+     C+=x**p*y**q*Q[i,j]
+  return C
+ def cV(c,Q):
+  if c.cov==Nr:
+   R=c.cd(Q).transpose()
+   E=c.cM(R,0,0)
+   r=c.cM(R,1,0)
+   j=c.cM(R,0,1)
+   O=c.cM(R,1,1)
+   s=c.cM(R,2,0)
+   L=c.cM(R,0,2)
+   G=r/E
+   T=j/E
+   c.cov=Nk([[s/E-G*G,O/E-G*T],[O/E-G*T,L/E-T*T]])
+   I=G+c.xmin
+   H=T+c.ymin
+   print>>xy,cx,I,H
+  return c.cov
+ def ct(c,Q):
+  Y=c.cV(Q)
+  y=Y[0,0]
+  P=Y[0,1]
+  u=Y[1,1]
+  F=0.5*Nn(2*P,y-u)
+  l1=0.5*(y+u)+0.5*Nw(4*P**2+(y-u)**2)
+  l2=0.5*(y+u)-0.5*Nw(4*P**2+(y-u)**2)
+  return l1,l2,l1/l2,F
+def ca(Q,threshold,minArea=2.):
+ d=[]
+ ny,nx=Q.shape
+ M=Nx(Q,threshold)
+ for V in M:
+  x=V[:,1]
+  y=ny-V[:,0]
+  n=co(x,y)
+  if n.area>=minArea:
+   d.append(n)
+ return d
+def cm(d,maxDist):
+ n=NC(d)
+ t=[]
  if n>=1:
-  bg=YB()
-  bg.addBlob(N[0])
-  m.append(bg)
-  for i in YL(1,n):
-   bi=N[i]
-   s=YF
-   for H in m:
-    for bj in H.blobs:
+  bg=ce()
+  bg.addBlob(d[0])
+  t.append(bg)
+  for i in NQ(1,n):
+   bi=d[i]
+   a=NO
+   for m in t:
+    for bj in m.blobs:
      if bi.distance(bj)<maxDist:
-      H.BI(bi)
-      s=Yy
+      m.cP(bi)
+      a=Ns
       break
-   if not s:
-    bg=YB()
+   if not a:
+    bg=ce()
     bg.addBlob(bi)
-    m.append(bg)
- return m
-def BW(H):
- D=[]
- p=[0]
- X=[0,0,0]
- Q=100.
- J=Yy
- for b in H.blobs:
-  for i in YL(0,YO(b.x)):
-   D.append([Yr(b.x[i]),Yr(b.y[i])])
- for i in YL(0,YO(D)):
-  for j in YL(i,YO(D)):
-   if(BM(D[i],D[j])>p[0]):
-    p=[BM(D[i],D[j]),D[i],D[j]]
- if p[1][0]<p[2][0]:
-  W=p[1][0]
-  y1=p[1][1]
-  v=p[2][0]
- else:
-  W=p[2][0]
-  y1=p[2][1]
-  v=p[1][0]
-  J=YF
- k=p[1][1]-p[2][1]
- j=p[1][0]-p[2][0]
- if J:
-  return[Yh(Yu,p[1]),Yh(Yu,p[2])]
- else:
-  return[Yh(Yu,p[2]),Yh(Yu,p[1])]
-def Bv(H):
- D=[]
- for b in H.blobs:
-  for i in YL(0,YO(b.x)):
-   D.append((Yr(b.x[i]),Yr(b.y[i])))
- return YA(YV(D))
-def Bk(k,j):
- if j==0 and k==0:
+    t.append(bg)
+ return t
+def cJ(m):
+ J=[]
+ W=[0]
+ for b in m.blobs:
+  for i in NQ(0,NC(b.x)):
+   J.append((b.x[i],b.y[i]))
+ for i in NQ(0,NC(J)):
+  for j in NQ(i,NC(J)):
+   if(cy(J[i],J[j])>W[0]):
+    W=[cy(J[i],J[j]),J[i],J[j]]
+ g=W[1]if W[1][0]<W[2][0]else W[2]
+ i=W[1]if not W[1]==g else W[2]
+ return(NL(Nj,g),NL(Nj,i))
+def cW(m):
+ J=[]
+ for b in m.blobs:
+  for i in NQ(0,NC(b.x)-1):
+   J.append((Nq(b.x[i]),Nq(b.y[i])))
+ return J
+def cg(num,dem):
+ if dem==0 and num==0:
   return NaN
- elif j==0:
-  return Yi(k)*YP(Yc)
+ elif dem==0:
+  return NA(num)*Nw(cS)
  else:
-  return Yr(k)/j
-def Bj(BT,point):
- return YK(-BT.m*point[0]+point[1]-(BT.p[1]-BT.m*BT.p[0]))/Yr(YP((-BT.m)**2+1))
-def Bt(Bq,Yd):
- print>>f,Yl(Bq)+','+Bw(Yd)
-def BR():
- raise YN
-p=YT(description="Histogram luminance of a JPG image")
-p.add_argument("text_file",nargs=1,help="Image path list file")
-p.add_argument("-x","--threshold",dest="thresh",Yd=Yr,default=YE,help="Threshold the pixel map")
-w=p.add_argument_group("Blob Identification")
-w.add_argument("-c","--contours",dest="contours",Yd=Yr,default=YE,help="Identify blob contours above some threshold")
-w.add_argument("-d","--distance",dest="distance",Yd=Yr,default=75.,help="Group blobs within some distance of each other")
-w.add_argument("-a","--min-area",dest="area",Yd=Yr,default=2.,help="Remove blobs below some minimum area")
-z=p.parse_args()
-S=('jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm'+'spi tiff webp xbm xv').split(' ')
-n=YM(z.text_file[0],'r+')
-BY=[]
-for BT in n:
- Bb=BT.strip()
- if Bb.split('.')[-1]in S:
-  BY.append(Bb)
-BY=YA(YV(BY))
-Bc=[]
-Bx=[]
-if YO(BY)==0:
- print('No image files were found.')and BR()
-f=YM('classifications.out','w')
-xy=YM('xandyCent.out','w')
-def Bw(x):
+  return Nq(num)/dem
+def ci(bg):
+ U=0.
+ f=[0,0]
+ for b in bg.blobs:
+  U+=b.perimeter
+  f[0]+=b.xc*b.perimeter
+  f[1]+=b.yc*b.perimeter
+ z=f[0]/(bg.count*U)
+ p=f[1]/(bg.count*U)
+ h=z-bg.xmin
+ B=bg.xmax-z
+ o=p-bg.ymin
+ e=bg.ymax-p
+ X=NR(h,B)/NE(h,B)
+ b=NR(o,e)/NE(o,e)
+ return X*b,NG(X-b)
+def cU(cA,point):
+ return NG(-cA.m*point[0]+point[1]-(cA.p[1]-cA.m*cA.p[0]))/Nq(Nw((-cA.m)**2+1))
+def cf(cx,NT):
+ print>>f,NI(cx)+','+cp(NT)
+def cz():
+ raise NH
+p=cX(description="Histogram luminance of a JPG image")
+p.add_argument("text_file",nargs=1,help="image list file name")
+p.add_argument("-x","--threshold",dest="thresh",NT=Nq,default=Nr,help="Threshold the pixel map")
+cw=p.add_argument_group("Blob Identification")
+cw.add_argument("-c","--contours",dest="contours",NT=Nq,default=Nr,help="Identify blob contours above some threshold")
+cw.add_argument("-d","--distance",dest="distance",NT=Nq,default=100.,help="Group blobs within some distance of each other")
+cw.add_argument("-a","--min-area",dest="area",NT=Nq,default=2.,help="Remove blobs below some minimum area")
+cD=p.parse_args()
+if not cD.contours==40:
+ print('Only image analysis at contour level 40 is supported.')and cz()
+cv=[]
+ck=('jpg jpeg bmp png eps gif im j2k j2p jpx msp pcx png ppm pgm pbm'+'spi tiff webp xbm xv').split(' ')
+cn=NY(cD.text_file[0],'r+')
+cv=[]
+for cA in cn:
+ cl=cA.strip()
+ if cl.split('.')[-1]in ck:
+  cv.append(cl)
+cv=Ny(NP(cv))
+if NC(cv)==0:
+ print('No image files were found.')and cz()
+f=NY('classifications.out','w')
+xy=NY('xandyCent.out','w')
+def cp(x):
  return{1:'spot',2:'worm',3:'ambig',4:'track',5:'noise'}[x]
-def Bz(old,new):
+def ch(old,new):
  return new if new>old else old
-for BP in BY:
- Bq=BP.split('/')[-1].split('.')[0]
- Bf=Yg(BP).convert("L")
- g=[]
- Bo=Bf.load()
- nx=Bf.size[0]
- ny=Bf.size[1]
+for cK in cv:
+ cx=cK.split('/')[-1].split('.')[0]
+ cq=NK(cK).convert("L")
+ Q=[]
+ cC=cq.load()
+ nx=cq.size[0]
+ ny=cq.size[1]
  x0,y0,x1,y1=(0,0,nx,ny)
- for y in YI(ny):
-  g.append([Bo[x,y]for x in YI(nx)])
- g=Ye(g,dtype=Yr)
- BG=Ym(Ym(g))/(YO(g)*YO(g[0]))
- if BG>4:
-  Bt(Bq,5)
+ for y in Nu(ny):
+  Q.append([cC[x,y]for x in Nu(nx)])
+ Q=Nl(Q,dtype=Nq)
+ cQ=NF(NF(Q))/(NC(Q)*NC(Q[0]))
+ if cQ>4:
+  cf(cx,5)
   continue
- N=BQ(g,threshold=args.contours,minArea=args.area)
- m=BJ(N,maxDist=args.distance)
- for g in m:
-  Bc.append(BW(g))
-  Bx.append(Bv(g))
- if z.thresh!=YE:
-  g[g<z.thresh]=0.
- if z.contours==40:
-  Yd=0
-  for i,bg in Ys(m):
-   X0,X1,Y0,Y1=bg.getSquareBoundingBox()
-   l1,l2,r,l=bg.getPrincipalMoments(g)
-   Bi=(YP(l1**2-l2**2)/l1)
-   Be=Bc[i][0]
-   Bg=Bc[i][1]
-   _i=BS(Bk((Yr(Bc[i][0][1])-Bc[i][1][1]),(Yr(Bc[i][0][0])-Bc[i][1][0])),Be)
-   BU=0.
-   Br=BM(Be,Bg)
-   for pt in Bx[i]:
-    BU+=Bj(_i,pt)
-   BO=BU/Br
-   BL=0.
-   BC=[0,0]
-   for b in bg.blobs:
-    BL+=b.perimeter
-    BC[0]+=b.xc*b.perimeter
-    BC[1]+=b.yc*b.perimeter
-   Ba=BC[0]/Yr(bg.count*BL)
-   BE=BC[1]/Yr(bg.count*BL)
-   Bu=Ba-bg.xmin
-   BF=bg.xmax-Ba
-   By=BE-bg.ymin
-   Bh=bg.ymax-BE
-   BA=YC([Bu,BF])/Ya([Bu,BF])
-   BV=YC([By,Bh])/Ya([By,Bh])
-   BK=BA*BV
-   Bd=YK(BA-BV)
-   if Bi>.99993 and l1>700:
-    Yd=Bz(Yd,3)
-   elif bg.b_area<4 or Br<6 or Br<13 and(r>=.2 and Bi<.945 or bg.b_area<7)or Bi<.7:
-    if bg.b_area>50:
-     if bg.b_area>62 and Br>10:
-      Yd=Bz(Yd,2)
-     else:
-      Yd=Bz(Yd,1)
+ d=ca(Q,threshold=args.contours,minArea=args.area)
+ t=cm(d,maxDist=args.distance)
+ cR=[]
+ cE=[]
+ for g in t:
+  cR.append(cJ(g))
+  cE.append(cW(g))
+ if cD.thresh!=Nr:
+  Q[Q<cD.thresh]=0.
+ NT=0
+ for i,bg in Nd(t):
+  l1,l2,r,F=bg.getPrincipalMoments(Q)
+  cr=(Nw(l1**2-l2**2)/l1)
+  cj=cR[i][0]
+  cO=cR[i][1]
+  _i=cB(cg((Nq(cR[i][0][1])-cR[i][1][1]),(Nq(cR[i][0][0])-cR[i][1][0])),cj)
+  cs=0.
+  cL=cy(cj,cO)
+  for pt in cE[i]:
+   cs+=cU(_i,pt)
+  cG=cs/cL
+  cT,cI=ci(bg)
+  if cr>.99993 and l1>700:
+   NT=ch(NT,3)
+  elif bg.b_area<4 or cL<6 or cL<13 and(r>=.2 and cr<.945 or bg.b_area<7)or cr<.7:
+   if bg.b_area>50:
+    if bg.b_area>62 and cL>10:
+     NT=ch(NT,2)
     else:
-     Yd=Bz(Yd,1)
+     NT=ch(NT,1)
    else:
-    if Bd>.55:
-     Yd=Bz(Yd,2)
-    elif bg.b_area>100 and(l1>100 and l1/10>l2)and Br>30:
-     if(BO>9)or(l1/5>Br and BO>3.9)or(80>Br>40 and bg.b_area>100 and BO>5):
-      Yd=Bz(Yd,2)
-     else:
-      Yd=4
-    elif Bi>.9998 and 130>Br>90:
-     Yd=4
-    elif Bi>.9995 and Br>40 and BK>.8:
-     Yd=Bz(Yd,3)
+    NT=ch(NT,1)
+  else:
+   if cI>.55:
+    NT=ch(NT,2)
+   elif bg.b_area>100 and(l1>100 and l1/10>l2)and cL>30:
+    if(cG>9)or(l1/5>cL and cG>3.9)or(80>cL>40 and bg.b_area>100 and cG>5):
+     NT=ch(NT,2)
     else:
-     if(BK>.978 and Bd<.01 or BK>.96 and Bd<.0047 or BK>.9 and r<.02 and Bd<.055 and BO<5)and Bi>.96:
-      if bg.b_area>33:
-       Yd=4
-      else:
-       Yd=Bz(Yd,2)
-     elif(r<.22 and(Bi<.985 and(Bd<.015 or BK>.88)and 18>Br>9 or .97<Bi<.985 and 18>Br>9 and BK>.83 and bg.b_area<30 or .99>Bi>.975 and BO<3.7 and 18>Br>7.6 and Bd<.023)or Bi>.99 and l1<15 and BK>.86 and Bd<.1 and 35>bg.b_area>28):
-      Yd=4
+     NT=4
+   elif cr>.9998 and 130>cL>90:
+    NT=4
+   elif cr>.9995 and cL>40 and cT>.8:
+    NT=ch(NT,3)
+   else:
+    if(cT>.978 and cI<.01 or cT>.96 and cI<.0047 or cT>.9 and r<.02 and cI<.055 and cG<5)and cr>.96:
+     if bg.b_area>33:
+      NT=4
      else:
-      if(BO>4.6 and bg.b_area<100)or bg.b_area<24 or Bi<.979 or(r>.2 and BO>4):
-       Yd=Bz(Yd,2)
+      NT=ch(NT,2)
+    elif(r<.22 and(cr<.985 and(cI<.015 or cT>.88)and 18>cL>9 or .97<cr<.985 and 18>cL>9 and cT>.83 and bg.b_area<30 or .99>cr>.975 and cG<3.7 and 18>cL>7.6 and cI<.023)or cr>.99 and l1<15 and cT>.86 and cI<.1 and 35>bg.b_area>28):
+     NT=4
+    else:
+     if(cG>4.6 and bg.b_area<100)or bg.b_area<24 or cr<.979 or(r>.2 and cG>4):
+      NT=ch(NT,2)
+     else:
+      if cI<.7 and cG>6:
+       NT=ch(NT,2)
+      elif(l1>100 and l2<12 and bg.b_area>40 and bg.b_area<60 and cG<3.8 or(NG(X)>.99 or NG(b)>.99)and NG(X)>.93 and NG(b)>.93 and cr>.99 and cG<2.95 and cG>2. and cI>.05 or(cT>.9 and cI<.02 and cG<3.1 and cr>.993 and cL>12)and bg.b_area<82 or((cT>.6 and cr>.9923 and cG<3.1 or cT>.88)and(cI<.03 or NG(X)>.996 or NG(b)>.996)and bg.b_area<100)):
+       NT=4
       else:
-       if Bd<.7 and BO>6:
-        Yd=Bz(Yd,2)
-       elif(l1>100 and l2<12 and bg.b_area>40 and bg.b_area<60 and BO<3.8 or(YK(BA)>.99 or YK(BV)>.99)and YK(BA)>.93 and YK(BV)>.93 and Bi>.99 and BO<2.95 and BO>2. and Bd>.05 or(BK>.9 and Bd<.02 and BO<3.1 and Bi>.993 and Br>12)and bg.b_area<82 or((BK>.6 and Bi>.9923 and BO<3.1 or BK>.88)and(Bd<.03 or YK(BA)>.996 or YK(BV)>.996)and bg.b_area<100)):
-        Yd=4
-       else:
-        if Bi>.999 and BO<3.14 and bg.b_area>58 and l1/25>l2:
-         Yd=4
-        elif Bi>.999 and .86<BK<.92 and Br>23:
-         Yd=Bz(Yd,2)
-        elif(Bi>.999 and((l1>90 and l2<10)and(BO>2.9 or BO<1.1)or Bi>.992 and bg.b_area<50 and .98>YK(BA)>.96 and YK(BV)>.96)):
-         Yd=Bz(Yd,3)
-        elif BK>.75 and Bd<.182 and((bg.b_area>28)or(bg.b_area<28 and Br>17)):
-         if((Bi>.9996 or r<.028)and BK<.9 and Br<30 and bg.b_area<62 or Bi>.99 and l1>400 and l1<600 and l2>60 and BO>3.4 or Bi<.99 and Bi>.975 and Br<17 and l1<16 and l2>2 and r>.2 or Bi>.993 and(BO<3 and 28<Br<40 and .94>BK>.9 and bg.b_area<50 or 3.5<BO<4 and 17<Br<25 and r<.12)):
-          Yd=Bz(Yd,2)
-         elif(BO<3.76 and Bi>.99 and Bd<.06 and r<.13 and(bg.b_area>60 or Br>10)and Ya(YK(BA),YK(BV))>.935 and YC(YK(BA),YK(BV))>.875 or BO<4.1 and bg.b_area>30 and Bd<0.059 and Br<16 or(BO<4.16 and BK>.74 and Bd<.012 and bg.b_area<50 and Br<20 and 12<l1<23 and l2<3)):
-          Yd=4
-         else:
-          Yd=Bz(Yd,2)
-        elif BK>.75 and Bd<.05 and bg.b_area>30:
-         Yd=4
-        elif .45<BK<.6 and .2<Bd<.5 and .999>Bi>.92:
-         Yd=4
+       if cr>.999 and cG<3.14 and bg.b_area>58 and l1/25>l2:
+        NT=4
+       elif cr>.999 and .86<cT<.92 and cL>23:
+        NT=ch(NT,2)
+       elif(cr>.999 and((l1>90 and l2<10)and(cG>2.9 or cG<1.1)or cr>.992 and bg.b_area<50 and .98>NG(X)>.96 and NG(b)>.96)):
+        NT=ch(NT,3)
+       elif cT>.75 and cI<.182 and((bg.b_area>28)or(bg.b_area<28 and cL>17)):
+        if((cr>.9996 or r<.028)and cT<.9 and cL<30 and bg.b_area<62 or cr>.99 and l1>400 and l1<600 and l2>60 and cG>3.4 or cr<.99 and cr>.975 and cL<17 and l1<16 and l2>2 and r>.2 or cr>.993 and(cG<3 and 28<cL<40 and .94>cT>.9 and bg.b_area<50 or 3.5<cG<4 and 17<cL<25 and r<.12)):
+         NT=ch(NT,2)
+        elif(cG<3.76 and cr>.99 and cI<.06 and r<.13 and(bg.b_area>60 or cL>10)and NE(NG(X),NG(b))>.935 and NR(NG(X),NG(b))>.875 or cG<4.1 and bg.b_area>30 and cI<0.059 and cL<16 or(cG<4.16 and cT>.74 and cI<.012 and bg.b_area<50 and cL<20 and 12<l1<23 and l2<3)):
+         NT=4
         else:
-         Yd=Bz(Yd,2)
-   if Yd==4:
-    break
-  Bt(Bq,Yd)
- else:
-  print('Only image analysis at contour level 40 is supported, sorry.')and BR()
+         NT=ch(NT,2)
+       elif cT>.75 and cI<.05 and bg.b_area>30:
+        NT=4
+       elif .45<cT<.6 and .2<cI<.5 and .999>cr>.92:
+        NT=4
+       else:
+        NT=ch(NT,2)
+  if NT==4:
+   break
+ cf(cx,NT)
 # Created by pyminifier (https://github.com/liftoff/pyminifier)
