@@ -297,7 +297,7 @@ def con_diff(bg):
     diffy_b = bg.ymax - centy
     ratx = min(diffx_a, diffx_b)/max(diffx_a, diffx_b)
     raty = min(diffy_a, diffy_b)/max(diffy_a, diffy_b)
-    return ratx*raty, abs(ratx-raty)
+    return ratx*raty, abs(ratx-raty), ratx, raty
 
 def findDist(line, point):
     return abs(-line.m*point[0]+point[1]-(line.p[1] - line.m*line.p[0]))/float(np.sqrt((-line.m)**2 + 1))
@@ -424,7 +424,7 @@ for afile in flist:
             tdist += findDist(_i, pt)
         factr = tdist/mlength #arbitrary normalizing factor
 
-        cdrp, cdrd = con_diff(bg)
+        cdrp, cdrd, ratx, raty = con_diff(bg)
 
         """Code block that analyzes the most likely type of event inside
         the image group currently being analyzed. Prints out only the rarest
