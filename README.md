@@ -16,9 +16,9 @@ The script is not completely accurate and is being improved. Currently the avera
 
 Each folder has the following contents ( _ = corresponding name ):
 
-_.py : Original unedited script
-_obf.py : Obfuscated and compressed script
-_arc.pyz : Binary pyz file version of script
+`_.py` : Original unedited script<br>
+`_obf.py` : Obfuscated and compressed script<br>
+`_arc.pyz` : Binary pyz file version of script<br>
 
 `hotspotsclass` contains the script to be run on the xandyCent.out file to identify hotspots.
 
