@@ -486,7 +486,7 @@ for files in flist:
                             type = compareType(type, 2)
                         else:
                             if cdrd < .7 and factr > 6:
-                                type = ompareType(type, 2)
+                                type = compareType(type, 2)
                             elif ( l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8 or
 
                                 (abs(ratx) > .99 or abs(raty) > .99) and abs(ratx) > .93 and abs(raty) > .93 and
