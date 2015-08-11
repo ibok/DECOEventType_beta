@@ -2,7 +2,7 @@
 
 """Runs through a given folder of images and prints out the type of event for
    each blob group in that event.
-   Stats: Weighted accuracy is roughly 85%, Processing rate is 2 sec/image
+   Stats: Weighted accuracy is roughly 90%, Processing rate is 2 sec/image
    For ease of parsing I/O, Output is in the format: id:event_type.
    Appends first letter of suspected event type to name of file."""
 
@@ -378,7 +378,7 @@ for afile in flist:
     try: # Check if image is valid
        img = Image.open(afile).convert("L")
     except IOError as e: # Print error and skip
-       print >>f, str(iid) + ',' + e
+       print >>f, str(iid) + ',' + str(e)
     else:
        image = []
        pix = img.load()
