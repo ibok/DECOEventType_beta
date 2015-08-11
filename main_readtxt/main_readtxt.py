@@ -525,5 +525,5 @@ for afile in flist:
                                    type = compareType(type, 2)
            if type == 4: #Exit if definite track
                break
-         print_type(iid, type)
+       print_type(iid, type)
          
