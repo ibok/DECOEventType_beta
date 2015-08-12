@@ -299,11 +299,11 @@ def con_diff(bg):
     raty = min(diffy_a, diffy_b)/max(diffy_a, diffy_b)
     return ratx*raty, abs(ratx-raty), ratx, raty
 
-def findDist(line, point):
+def find_dist(line, point):
     return abs(-line.m*point[0]+point[1]-(line.p[1] - line.m*line.p[0]))/float(np.sqrt((-line.m)**2 + 1))
 
-def print_type(iid, type):
-    print >>f, str(iid) + ',' + get_type(type)
+def ptype(iid, type):
+    print >>f, '%s,%s' % (iid, get_type(type))
 
 def exit(): # stops program
     raise SystemExit
@@ -346,7 +346,7 @@ for line in fpaths:
     if clin.split('.')[-1] in img_types:
         flist.append(clin)
 
-flist = sorted(set(flist)) #Remove dupes
+flist = sorted(set(flist)) #Remove duplicates
 
 # Check if the folder contains valid image files and if not, exit
 if len(flist) == 0:
@@ -367,7 +367,7 @@ def get_type(x): #Returns string version of type
         5 : 'noise'
     }[x]
 
-def compareType(old, new): #Checks if type is less common
+def compare_type(old, new): #Checks if type is less common
     return new if new > old else old
 
 for afile in flist:
@@ -377,8 +377,8 @@ for afile in flist:
     # Load each image and convert pixel values to grayscale intensities
     try: # Check if image is valid
        img = Image.open(afile).convert("L")
-    except IOError as e: # Print error and skip
-       print >>f, str(iid) + ',' + str(e)
+    except IOError as _: # Print error and skip
+       print >>f, '%s,%s' % (iid, _)
     else:
        image = []
        pix = img.load()
@@ -427,7 +427,7 @@ for afile in flist:
            tdist = 0.
            mlength = distance(init, final)
            for pt in pt_arr[i]:
-               tdist += findDist(_i, pt)
+               tdist += find_dist(_i, pt)
            factr = tdist/mlength #arbitrary normalizing factor
    
            cdrp, cdrd, ratx, raty = con_diff(bg)
@@ -438,33 +438,33 @@ for afile in flist:
    
            # 1 == Spot 2 == Worm 3 == Ambiguous 4 == Track
            if ecc > .99993 and l1 > 700:
-               type = compareType(type, 3)
+               type = compare_type(type, 3)
            elif bg.b_area < 4 or mlength < 6 or mlength < 13 and (r >= .2 and ecc < .945 or bg.b_area < 7) or ecc < .7:
                if bg.b_area > 50:
                    if bg.b_area > 62 and mlength > 10:
-                       type = compareType(type, 2)
+                       type = compare_type(type, 2)
                    else:
-                       type = compareType(type, 1)
+                       type = compare_type(type, 1)
                else:
-                   type = compareType(type, 1)
+                   type = compare_type(type, 1)
            else:
                if cdrd > .55:
-                   type = compareType(type, 2)
+                   type = compare_type(type, 2)
                elif bg.b_area > 100 and (l1 > 100 and l1/10 > l2) and mlength > 30:
                    if ( factr > 9 ) or ( l1/5 > mlength and factr > 3.9 ) or ( 80 > mlength > 40 and bg.b_area > 100 and factr > 5 ):
-                       type = compareType(type, 2)
+                       type = compare_type(type, 2)
                    else:
                        type = 4
                elif ecc > .9998 and 130 > mlength > 90:
                    type = 4
                elif ecc > .9995 and mlength > 40 and cdrp > .8:
-                   type = compareType(type, 3)
+                   type = compare_type(type, 3)
                else:
                    if (cdrp > .978 and cdrd < .01 or cdrp > .96 and cdrd < .0047 or cdrp > .9 and r < .02 and cdrd < .055 and factr < 5) and ecc > .96:
                        if bg.b_area > 33:
                            type = 4
                        else:
-                           type = compareType(type, 2)
+                           type = compare_type(type, 2)
                    elif ( r < .22 and (ecc < .985 and (cdrd < .015 or cdrp > .88) and 18 > mlength > 9 or
    
                        .97 < ecc < .985 and 18 > mlength > 9 and cdrp > .83 and bg.b_area < 30 or
@@ -475,10 +475,10 @@ for afile in flist:
                        type = 4
                    else:
                        if (factr > 4.6 and bg.b_area < 100) or bg.b_area < 24 or ecc < .979 or (r > .2 and factr > 4):
-                           type = compareType(type, 2)
+                           type = compare_type(type, 2)
                        else:
                            if cdrd < .7 and factr > 6:
-                               type = compareType(type, 2)
+                               type = compare_type(type, 2)
                            elif ( l1 > 100 and l2 < 12 and bg.b_area > 40 and bg.b_area < 60 and factr < 3.8 or
    
                                (abs(ratx) > .99 or abs(raty) > .99) and abs(ratx) > .93 and abs(raty) > .93 and
@@ -492,11 +492,11 @@ for afile in flist:
                                if ecc > .999 and factr < 3.14 and bg.b_area > 58 and l1/25 > l2:
                                    type = 4
                                elif ecc > .999 and .86 < cdrp < .92 and mlength > 23:
-                                   type = compareType(type, 2)
+                                   type = compare_type(type, 2)
                                elif ( ecc > .999 and ((l1 > 90 and l2 < 10) and (factr > 2.9 or factr < 1.1) or
    
                                    ecc > .992 and bg.b_area < 50 and .98 > abs(ratx) > .96 and abs(raty) > .96) ):
-                                   type = compareType(type, 3)
+                                   type = compare_type(type, 3)
                                elif cdrp > .75 and cdrd < .182 and ((bg.b_area > 28) or (bg.b_area < 28 and mlength > 17)):
                                    if ( (ecc > .9996 or r < .028) and cdrp < .9 and mlength < 30 and bg.b_area < 62 or
    
@@ -507,7 +507,7 @@ for afile in flist:
                                        ecc > .993 and (factr < 3 and 28 < mlength < 40 and .94 > cdrp > .9 and bg.b_area < 50 or
    
                                            3.5 < factr < 4 and 17 < mlength < 25 and r < .12) ):
-                                       type = compareType(type, 2)
+                                       type = compare_type(type, 2)
                                    elif ( factr < 3.76 and ecc > .99 and cdrd < .06 and r < .13 and (bg.b_area > 60 or mlength > 10)
                                        and max(abs(ratx), abs(raty)) > .935 and min(abs(ratx), abs(raty)) > .875 or
    
@@ -516,14 +516,14 @@ for afile in flist:
                                    (factr < 4.16 and cdrp > .74 and cdrd < .012 and bg.b_area < 50 and mlength < 20 and 12 < l1 < 23 and l2 < 3) ):
                                        type = 4
                                    else:
-                                       type = compareType(type, 2)
+                                       type = compare_type(type, 2)
                                elif cdrp > .75 and cdrd < .05 and bg.b_area > 30:
                                    type = 4
                                elif .45 < cdrp < .6 and .2 < cdrd < .5 and .999 > ecc > .92:
                                    type = 4
                                else:
-                                   type = compareType(type, 2)
+                                   type = compare_type(type, 2)
            if type == 4: #Exit if definite track
                break
-       print_type(iid, type)
+       ptype(iid, type)
          
