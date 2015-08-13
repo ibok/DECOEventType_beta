@@ -65,4 +65,4 @@ for i in range(0, len(hotspots)):
 
 #for i in range(0, len(nonhotspots))
 
-print 'to see eventIDs with hostpots, look at hotspotclass.out file in your folder'
+print 'to see eventIDs with hotspots, look at hotspotclass.out file in your folder'
